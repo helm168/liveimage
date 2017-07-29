@@ -1,0 +1,40 @@
+{
+  "name": "liveimage",
+  "version": "1.0.0",
+  "description": "An react component for live image",
+  "main": "build/LiveImage.js",
+  "scripts": {
+    "build": "./node_modules/.bin/gulp build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/helm168/liveimage.git"
+  },
+  "keywords": [
+    "react",
+    "component",
+    "stream",
+    "image"
+  ],
+  "devDependencies": {
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-preset-env": "^1.2.2",
+    "babel-preset-react": "^6.23.0",
+    "babel-preset-stage-0": "^6.22.0",
+    "gulp": "~3.9.0",
+    "gulp-babel": "^6.1.2"
+  },
+  "dependencies": {
+    "prop-types": "^15.5.10",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "react-web-scroller": "1.2.0"
+  },
+  "author": "helm",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/helm168/liveimage/issues"
+  },
+  "homepage": "https://github.com/helm168/liveimage#readme"
+}
