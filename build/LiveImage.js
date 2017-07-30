@@ -258,7 +258,8 @@ class LiveImage extends _react.Component {
   _addData(imgs = []) {
     const {
       imgWidth,
-      imgHeight
+      imgHeight,
+      webgl
     } = this.props;
 
     let imgRotate = this.props.direction === DIRECTION.RIGHT ? 1 : 0;
@@ -273,7 +274,8 @@ class LiveImage extends _react.Component {
           src: _buf2pix2.default.grayBuf2RgbaBuf(img, null, imgWidth, imgHeight),
           width: imgWidth,
           height: imgHeight,
-          rotate: imgRotate
+          rotate: imgRotate,
+          webgl
         };
         this._store.addData([lastData]);
       } else {
@@ -415,15 +417,17 @@ LiveImage.propTypes = {
   imgs: _propTypes2.default.array,
   column: _propTypes2.default.number,
   scaleStep: _propTypes2.default.number,
-  maxCacheData: _propTypes2.default.number
+  maxCacheData: _propTypes2.default.number,
+  webgl: _propTypes2.default.bool
 };
 LiveImage.defaultProps = {
   direction: DIRECTION.RIGHT,
-  velocity: .5,
+  velocity: 1,
   imgWidth: 2560,
-  imgHeight: 512,
+  imgHeight: 1280,
   // itemHeight: 176,
   column: 1,
   scaleStep: .5,
-  maxCacheData: 1000
+  maxCacheData: 1000,
+  webgl: true
 };

@@ -20,6 +20,10 @@ var _CanvasImage = require('./CanvasImage');
 
 var _CanvasImage2 = _interopRequireDefault(_CanvasImage);
 
+var _WebglImage = require('./WebglImage');
+
+var _WebglImage2 = _interopRequireDefault(_WebglImage);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const styles = {
@@ -35,6 +39,8 @@ class Image extends _react.Component {
   renderImg() {
     if (typeof src === 'string') {
       return _react2.default.createElement(_HTMLImage2.default, this.props);
+    } else if (this.props.webgl) {
+      return _react2.default.createElement(_WebglImage2.default, this.props);
     }
     return _react2.default.createElement(_CanvasImage2.default, this.props);
   }

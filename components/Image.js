@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import HTMLImage from './HTMLImage';
 import CanvasImage from './CanvasImage';
+import WebglImage from './WebglImage';
 
 const styles = {
   wrapper: {
@@ -21,6 +22,8 @@ export default class Image extends Component {
   renderImg() {
     if (typeof src === 'string') {
       return <HTMLImage {...this.props} />
+    } else if (this.props.webgl) {
+      return <WebglImage {...this.props} />
     }
     return <CanvasImage {...this.props} />
   }

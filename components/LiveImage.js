@@ -98,17 +98,19 @@ export default class LiveImage extends Component {
     column: PropTypes.number,
     scaleStep: PropTypes.number,
     maxCacheData: PropTypes.number,
+    webgl: PropTypes.bool,
   }
 
   static defaultProps = {
     direction: DIRECTION.RIGHT,
-    velocity: .5,
+    velocity: 1,
     imgWidth: 2560,
-    imgHeight: 512,
+    imgHeight: 1280,
     // itemHeight: 176,
     column: 1,
     scaleStep: .5,
     maxCacheData: 1000,
+    webgl: true,
   };
 
   _flow() {
@@ -251,6 +253,7 @@ export default class LiveImage extends Component {
     const {
       imgWidth,
       imgHeight,
+      webgl,
     } = this.props;
 
     let imgRotate = this.props.direction === DIRECTION.RIGHT ? 1 : 0;
@@ -266,6 +269,7 @@ export default class LiveImage extends Component {
           width: imgWidth,
           height: imgHeight,
           rotate: imgRotate,
+          webgl,
         };
         this._store.addData([lastData]);
       } else {

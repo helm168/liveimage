@@ -5,6 +5,7 @@
   "main": "build/LiveImage.js",
   "scripts": {
     "build": "./node_modules/.bin/gulp build",
+    "watch": "./node_modules/.bin/gulp watchJs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

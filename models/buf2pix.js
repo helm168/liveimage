@@ -23,13 +23,21 @@ function linearMap(extent1, extent2) {
 export default {
   // 宽度为维度
   grayBuf2RgbaBuf(buf, rgbaBuf, rgbaWidth, rgbaHeight) {
-    rgbaBuf = rgbaBuf || {
-      imageBuffer: [],
-      full: false,
-      width: rgbaWidth,
-      height: 0,
-    };
-    let minHeight = Math.min(buf.imageHeight, rgbaHeight - rgbaBuf.height);
+    if (!rgbaBuf) {
+      let ln = rgbaWidth * rgbaHeight * 4;
+      let arr = new Uint8ClampedArray(ln);
+      let imageData = new ImageData(arr, rgbaWidth, rgbaHeight);
+      rgbaBuf = {
+        imageBuffer: imageData,
+        full: false,
+        idx: 0,
+        width: rgbaWidth,
+        height: rgbaHeight,
+        fillHeight: 0,
+      };
+    }
+    let imageBuffer = rgbaBuf.imageBuffer.data;
+    let minHeight = Math.min(buf.imageHeight, rgbaHeight - rgbaBuf.fillHeight);
     let minWidth;
     let mapFn;
     if (rgbaWidth <= buf.imageWidth) {
@@ -39,17 +47,17 @@ export default {
       mapFn = linearMap([0, buf.imageWidth], [0, rgbaWidth]);
       minWidth = buf.imageWidth;
     }
-    for(let i = 0; i < minHeight; i++) {
-      rgbaBuf.height++;
-      for(let j = 0; j < minWidth; j++) {
+    for (let i = 0; i < minHeight; i++) {
+      rgbaBuf.fillHeight++;
+      for (let j = 0; j < minWidth; j++) {
         let distJ = mapFn(j);
-        rgbaBuf.imageBuffer.push(buf.imageBuffer[distJ]);
-        rgbaBuf.imageBuffer.push(buf.imageBuffer[distJ]);
-        rgbaBuf.imageBuffer.push(buf.imageBuffer[distJ]);
-        rgbaBuf.imageBuffer.push(255);
+        imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
+        imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
+        imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
+        imageBuffer[rgbaBuf.idx++] = 255;
       }
     }
-    rgbaBuf.full = rgbaBuf.height === rgbaHeight;
+    rgbaBuf.full = rgbaBuf.fillHeight === rgbaBuf.height;
     return rgbaBuf;
   }
 }
