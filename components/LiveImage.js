@@ -89,7 +89,6 @@ export default class LiveImage extends Component {
   }
 
   static propTypes = {
-    name: PropTypes.string,
     direction: PropTypes.string,
     velocity: PropTypes.number,
     imgWidth: PropTypes.number,
@@ -105,7 +104,7 @@ export default class LiveImage extends Component {
     direction: DIRECTION.RIGHT,
     velocity: 1,
     imgWidth: 2560,
-    imgHeight: 1280,
+    imgHeight: 320,
     // itemHeight: 176,
     column: 1,
     scaleStep: .5,
@@ -261,11 +260,14 @@ export default class LiveImage extends Component {
     // 先填满store中最后一个未填满的data
     let lastData = this._store.getLast();
 
+    // webgl: single channel does the work
+    let method = webgl ? 'bufCopy' : 'grayBuf2RgbaBuf';
+
     imgs.forEach((img, idx) => {
       if (!lastData || lastData.src.full) {
         lastData = {
           idx: itemId++,
-          src: buf2pix.grayBuf2RgbaBuf(img, null, imgWidth, imgHeight),
+          src: buf2pix[method](img, null, imgWidth, imgHeight),
           width: imgWidth,
           height: imgHeight,
           rotate: imgRotate,
@@ -273,7 +275,7 @@ export default class LiveImage extends Component {
         };
         this._store.addData([lastData]);
       } else {
-        buf2pix.grayBuf2RgbaBuf(img, lastData.src, imgWidth, imgHeight);
+        buf2pix[method](img, lastData.src, imgWidth, imgHeight);
       }
     });
   }

@@ -267,11 +267,14 @@ class LiveImage extends _react.Component {
     // 先填满store中最后一个未填满的data
     let lastData = this._store.getLast();
 
+    // webgl: single channel does the work
+    let method = webgl ? 'bufCopy' : 'grayBuf2RgbaBuf';
+
     imgs.forEach((img, idx) => {
       if (!lastData || lastData.src.full) {
         lastData = {
           idx: itemId++,
-          src: _buf2pix2.default.grayBuf2RgbaBuf(img, null, imgWidth, imgHeight),
+          src: _buf2pix2.default[method](img, null, imgWidth, imgHeight),
           width: imgWidth,
           height: imgHeight,
           rotate: imgRotate,
@@ -279,7 +282,7 @@ class LiveImage extends _react.Component {
         };
         this._store.addData([lastData]);
       } else {
-        _buf2pix2.default.grayBuf2RgbaBuf(img, lastData.src, imgWidth, imgHeight);
+        _buf2pix2.default[method](img, lastData.src, imgWidth, imgHeight);
       }
     });
   }
@@ -409,7 +412,6 @@ class LiveImage extends _react.Component {
 }
 exports.default = LiveImage;
 LiveImage.propTypes = {
-  name: _propTypes2.default.string,
   direction: _propTypes2.default.string,
   velocity: _propTypes2.default.number,
   imgWidth: _propTypes2.default.number,
@@ -424,7 +426,7 @@ LiveImage.defaultProps = {
   direction: DIRECTION.RIGHT,
   velocity: 1,
   imgWidth: 2560,
-  imgHeight: 1280,
+  imgHeight: 320,
   // itemHeight: 176,
   column: 1,
   scaleStep: .5,

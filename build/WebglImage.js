@@ -137,7 +137,7 @@ function createBuffers(gl, image) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
   // Upload the image into the texture.
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image.imageBuffer);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, width, height, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, image.imageBuffer);
 
   return {
     positionBuffer,
@@ -190,7 +190,15 @@ class CanvasImage extends _react.Component {
   }
 
   renderImg() {
-    this.renderByPix();
+    if (this._webglRendered) {
+      let gl = this.canvasEl.getContext('webgl');
+      let image = this.props.src;
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, image.width, image.height, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, image.imageBuffer);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    } else {
+      this.renderByPix();
+      this._webglRendered = true;
+    }
   }
 
   render() {

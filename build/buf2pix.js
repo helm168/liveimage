@@ -64,5 +64,39 @@ exports.default = {
     }
     rgbaBuf.full = rgbaBuf.fillHeight === rgbaBuf.height;
     return rgbaBuf;
+  },
+  bufCopy(buf, bufTo, rgbaWidth, rgbaHeight) {
+    if (!bufTo) {
+      let ln = rgbaWidth * rgbaHeight;
+      let arr = new Uint8Array(ln);
+      bufTo = {
+        imageBuffer: arr,
+        full: false,
+        idx: 0,
+        width: rgbaWidth,
+        height: rgbaHeight,
+        fillHeight: 0
+      };
+    }
+    let imageBuffer = bufTo.imageBuffer;
+    let minHeight = Math.min(buf.imageHeight, rgbaHeight - bufTo.fillHeight);
+    let minWidth;
+    let mapFn;
+    if (rgbaWidth <= buf.imageWidth) {
+      mapFn = linearMap([0, rgbaWidth], [0, buf.imageWidth]);
+      minWidth = rgbaWidth;
+    } else {
+      mapFn = linearMap([0, buf.imageWidth], [0, rgbaWidth]);
+      minWidth = buf.imageWidth;
+    }
+    for (let i = 0; i < minHeight; i++) {
+      bufTo.fillHeight++;
+      for (let j = 0; j < minWidth; j++) {
+        let distJ = mapFn(j);
+        imageBuffer[bufTo.idx++] = buf.imageBuffer[distJ];
+      }
+    }
+    bufTo.full = bufTo.fillHeight === bufTo.height;
+    return bufTo;
   }
 };
