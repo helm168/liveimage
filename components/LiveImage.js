@@ -5,6 +5,7 @@ import List, { Store } from './List';
 import Image from './Image';
 import EditLayer from './EditLayer';
 import buf2pix from './buf2pix';
+import pool from './webglRenderPool';
 
 export const DIRECTION = {
   LEFT: 'l',
@@ -375,6 +376,22 @@ export default class LiveImage extends Component {
 
   componentWillMount() {
     this._addData(this.props.imgs);
+    if (!this._initPool && this.props.webgl) {
+      let {
+        imgWidth,
+        imgHeight,
+        rotate,
+      } = this.props;
+      pool.init({
+        image: {
+          imageBuffer: new Uint8Array(imgWidth * imgHeight).fill(255),
+          width: imgWidth,
+          height: imgHeight,
+        },
+        rotate: 1,
+      }, 12);
+      this._initPool = true;
+    }
   }
 
   componentWillReceiveProps(nextProps) {

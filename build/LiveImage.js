@@ -35,6 +35,10 @@ var _buf2pix = require('./buf2pix');
 
 var _buf2pix2 = _interopRequireDefault(_buf2pix);
 
+var _webglRenderPool = require('./webglRenderPool');
+
+var _webglRenderPool2 = _interopRequireDefault(_webglRenderPool);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const DIRECTION = exports.DIRECTION = {
@@ -396,6 +400,22 @@ class LiveImage extends _react.Component {
 
   componentWillMount() {
     this._addData(this.props.imgs);
+    if (!this._initPool && this.props.webgl) {
+      let {
+        imgWidth,
+        imgHeight,
+        rotate
+      } = this.props;
+      _webglRenderPool2.default.init({
+        image: {
+          imageBuffer: new Uint8Array(imgWidth * imgHeight).fill(255),
+          width: imgWidth,
+          height: imgHeight
+        },
+        rotate: 1
+      }, 12);
+      this._initPool = true;
+    }
   }
 
   componentWillReceiveProps(nextProps) {

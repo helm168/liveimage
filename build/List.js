@@ -30,9 +30,11 @@ class List extends _react.Component {
     this._currentScrollItemCount = 0;
     this._listItems = [];
     this._visualItemCount = 0;
+
+    // 多加点padding, 隐藏启动时的抖动
     this._initPadding = {
-      x: window.innerWidth,
-      y: window.innerHeight
+      x: window.innerWidth + 100,
+      y: window.innerHeight + 100
     };
     this._itemHeight = 0;
     this._paddingStyle = {
