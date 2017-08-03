@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import pool from './webglRenderPool';
+import pool, { Render } from './webglRenderPool';
 
 const styles = {
   wrapper: {

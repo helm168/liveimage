@@ -195,14 +195,10 @@ class Render {
   }
 }
 
+exports.Render = Render;
 exports.default = {
   init(option, ln) {
     Array.from(Array(ln)).forEach(() => {
-      let {
-        width,
-        height
-      } = option;
-      option.imageBuffer = new Uint8Array(width, height);
       cachedRender.push(new Render(option));
     });
   },

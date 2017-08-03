@@ -50,7 +50,7 @@ class WebglImage extends _react.Component {
     this._full = this.props.src.full;
     this._render = _webglRenderPool2.default.pop();
     if (!this._render) {
-      this._render = new Render({
+      this._render = new _webglRenderPool.Render({
         image: this.props.src,
         rotate: this.props.rotate
       });

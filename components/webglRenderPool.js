@@ -128,7 +128,7 @@ function createBuffers(gl, image) {
   };
 }
 
-class Render {
+export class Render {
   constructor(options) {
     let {
       image,
@@ -196,11 +196,6 @@ class Render {
 export default {
   init(option, ln) {
     Array.from(Array(ln)).forEach(() => {
-      let {
-        width,
-        height,
-      } = option;
-      option.imageBuffer = new Uint8Array(width, height);
       cachedRender.push(new Render(option));
     });
   },
