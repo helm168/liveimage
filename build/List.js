@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Store = undefined;
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -14,6 +13,10 @@ var _react2 = _interopRequireDefault(_react);
 var _reactWebScroller = require('react-web-scroller');
 
 var _reactWebScroller2 = _interopRequireDefault(_reactWebScroller);
+
+var _MeasureBox = require('./MeasureBox');
+
+var _MeasureBox2 = _interopRequireDefault(_MeasureBox);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -41,11 +44,34 @@ class List extends _react.Component {
       width: this._initPadding.x,
       height: this._initPadding.y
     };
-    this.state = {};
+    this.state = {
+      measureBoxs: []
+    };
   }
 
   getDataSize(data) {
     return data && data.size();
+  }
+
+  renderMeasureBoxs() {
+    let measureBoxs = this.state.measureBoxs;
+    let position = this.getPosition();
+    let containerSize = this.getContainerSize();
+    // TODO: 考虑方向
+    measureBoxs.forEach(box => {
+      if (!box.positionMapped) {
+        box.positionMapped = true;
+        // 仅考虑向右移动的case， 以right为参考
+        box.right = containerSize.x - position.x - box.width - box.left;
+        delete box.left;
+        box.top = box.top - position.y;
+      }
+    });
+    return _react2.default.createElement(
+      'div',
+      { style: styles.measureBoxContainer, className: '_measureBoxs' },
+      measureBoxs.map(box => _react2.default.createElement(_MeasureBox2.default, _extends({ key: box.id }, box)))
+    );
   }
 
   // list无限滚动需要知道list item的高度
@@ -76,7 +102,12 @@ class List extends _react.Component {
   }
 
   renderListItem(key, data, itemStyle) {
-    return _react2.default.createElement(this.props.itemClazz, _extends({ key: key }, data, { style: itemStyle }));
+    return _react2.default.createElement(this.props.itemClazz, _extends({ key: key }, data, { style: itemStyle,
+      rotate: this.props.rotate }));
+  }
+
+  renderMeasureBox() {
+    return _react2.default.createElement(EditLayer, { scale: this.state.scale });
   }
 
   renderListItems() {
@@ -139,6 +170,7 @@ class List extends _react.Component {
       { className: '_list', style: contentStyle },
       _react2.default.createElement('div', { style: holderStyle }),
       this.renderItemHeightDetectorEl(),
+      this.renderMeasureBoxs(),
       items
     );
   }
@@ -164,6 +196,17 @@ class List extends _react.Component {
 
   componentWillReceiveProps(nextProps) {
     let size = this.getDataSize(nextProps.data);
+    let nextMeasureBoxs = nextProps.data.getMeasureBoxs() || [];
+    let mergeMeasureBox = [];
+    nextMeasureBoxs.forEach(box => {
+      let find = this.state.measureBoxs.find(thisBox => thisBox.id === box.id);
+      if (!find) {
+        mergeMeasureBox.push(box);
+      } else {
+        mergeMeasureBox.push(find);
+      }
+    });
+    this.state.measureBoxs = mergeMeasureBox;
     if (size !== this._dataLn) {
       this._dataLn = size;
       this._scroller._refreshPosition();
@@ -248,6 +291,17 @@ class List extends _react.Component {
     }
   }
 
+  getContainerSize() {
+    if (this._scroller) {
+      return this._scroller.getContainerSize();
+    } else {
+      return {
+        x: 0,
+        y: 0
+      };
+    }
+  }
+
   scrollTo(x, y) {
     if (this._scroller) {
       this._scroller.scrollTo(x, y);
@@ -255,9 +309,7 @@ class List extends _react.Component {
   }
 }
 
-exports.default = List; // 用来控制数据缓存的类
-// 由于图片一直以流的方式显示，不仅ui需要动态删除，数据也需要删除，不然可能撑爆内存
-
+exports.default = List;
 List.propTypes = {
   data: _react.PropTypes.any.isRequired,
   itemHeight: _react.PropTypes.number,
@@ -269,61 +321,6 @@ List.propTypes = {
 List.defaultProps = {
   direction: 'v'
 };
-class Store {
-  constructor(options = {}) {
-    this._maxLn = options.maxLn;
-    this._minLn = 0;
-    this._startIdx = 0;
-    this.setData(options.data);
-  }
-  getDataAt(idx) {
-    return this._data[idx - this._startIdx];
-  }
-  getLast() {
-    return this._data[this._data.length - 1];
-  }
-  getData() {
-    return this._data;
-  }
-  addData(data = []) {
-    this.setData(this._data.concat(data));
-  }
-  setData(data = []) {
-    if (data.length > this._maxLn) {
-      let delLn = data.length - this._maxLn;
-      this._startIdx += delLn;
-      if (this._startIdx > this._minLn) {
-        this._data = data.slice(delLn - (this._startIdx - this._minLn));
-        this._startIdx = this._minLn;
-      } else {
-        this._data = data.slice(delLn);
-      }
-    } else {
-      this._startIdx = 0;
-      this._data = data;
-    }
-  }
-  setMin(minLn) {
-    this._minLn = minLn;
-  }
-  setMax(maxLn) {
-    this._maxLn = maxLn;
-  }
-  size() {
-    return this._data.length + this._startIdx;
-  }
-  isWritable() {
-    return this._data.length < this._maxLn;
-  }
-  start() {
-    return this._startIdx;
-  }
-  clear() {
-    this._startIdx = 0;
-  }
-}
-
-exports.Store = Store;
 class PositionMap {
   constructor(options) {
     this._height = options.height;
@@ -380,5 +377,13 @@ let styles = {
   itemHeightDetector: {
     position: 'absolute',
     top: 0
+  },
+  measureBoxContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    zIndex: 10
   }
 };

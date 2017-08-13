@@ -16,6 +16,10 @@ var _propTypes = require('prop-types');
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
+var _MeasureBox = require('./MeasureBox');
+
+var _MeasureBox2 = _interopRequireDefault(_MeasureBox);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const styles = {
@@ -31,6 +35,7 @@ const styles = {
 };
 
 class EditLayer extends _react.Component {
+
   onTouchStart(evt) {
     this._sp = this._getPosition(evt);
   }
@@ -39,6 +44,9 @@ class EditLayer extends _react.Component {
     this.forceUpdate();
   }
   onTouchEnd(evt) {
+    if (this.props.onMeasure && this._measureBox) {
+      this.props.onMeasure(this._measureBox);
+    }
     this._sp = this._mp = null;
     this.forceUpdate();
   }
@@ -103,6 +111,25 @@ class EditLayer extends _react.Component {
       return null;
     }
   }
+  renderMeasureBox() {
+    let p1 = this._sp;
+    let p2 = this._mp;
+    if (p1 && p2) {
+      let scale = this.props.scale || 1;
+      let w = Math.abs(p2.x - p1.x);
+      w = (w / scale).toFixed(0);
+      let h = Math.abs(p2.y - p1.y);
+      h = (h / scale).toFixed(0);
+      let layout = this._measureBox = {
+        top: Math.min(p2.y, p1.y),
+        left: Math.min(p2.x, p1.x),
+        width: Number(w),
+        height: Number(h)
+      };
+      return _react2.default.createElement(_MeasureBox2.default, layout);
+    }
+    return null;
+  }
   render() {
     return _react2.default.createElement(
       'div',
@@ -117,9 +144,11 @@ class EditLayer extends _react.Component {
         onTouchEnd: this.onTouchEnd.bind(this),
         onMouseUp: this.onTouchEnd.bind(this),
         onTouchCancel: this.onTouchEnd.bind(this) },
-      this.renderRect(),
-      this.renderMeasure()
+      this.renderMeasureBox()
     );
   }
 }
 exports.default = EditLayer;
+EditLayer.propTypes = {
+  onMeasure: _propTypes2.default.func
+};

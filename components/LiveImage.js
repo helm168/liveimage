@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Scroller from 'react-web-scroller';
-import List, { Store } from './List';
+import Store from './Store';
+import List from './List';
 import Image from './Image';
 import EditLayer from './EditLayer';
 import buf2pix from './buf2pix';
@@ -71,8 +72,6 @@ const styles = {
   }
 };
 
-let itemId = 0;
-
 export default class LiveImage extends Component {
   constructor(props) {
     super(...arguments);
@@ -83,10 +82,6 @@ export default class LiveImage extends Component {
       imgs: [],
     };
     this.onKeydown = this.onKeydown.bind(this);
-    this._store = new Store({
-      maxLn: props.maxCacheData,
-      data: this.state.imgs,
-    });
   }
 
   static propTypes = {
@@ -99,6 +94,9 @@ export default class LiveImage extends Component {
     scaleStep: PropTypes.number,
     maxCacheData: PropTypes.number,
     webgl: PropTypes.bool,
+    onMeasure: PropTypes.func,
+    store: PropTypes.object,
+    paused: PropTypes.bool,
   }
 
   static defaultProps = {
@@ -111,6 +109,7 @@ export default class LiveImage extends Component {
     scaleStep: .5,
     maxCacheData: 1000,
     webgl: true,
+    paused: false,
   };
 
   _flow() {
@@ -247,40 +246,6 @@ export default class LiveImage extends Component {
     };
   }
 
-  // 目前页面的结构采用多个Canvas, 每个Canvas画图片的一部分，数据流中的数据是2560*1的像素点
-  // 需要将数据流中多个数据合并成一个canvas描绘用数据
-  _addData(imgs=[]) {
-    const {
-      imgWidth,
-      imgHeight,
-      webgl,
-    } = this.props;
-
-    let imgRotate = this.props.direction === DIRECTION.RIGHT ? 1 : 0;
-
-    // 先填满store中最后一个未填满的data
-    let lastData = this._store.getLast();
-
-    // webgl: single channel does the work
-    let method = webgl ? 'bufCopy' : 'grayBuf2RgbaBuf';
-
-    imgs.forEach((img, idx) => {
-      if (!lastData || lastData.src.full) {
-        lastData = {
-          idx: itemId++,
-          src: buf2pix[method](img, null, imgWidth, imgHeight),
-          width: imgWidth,
-          height: imgHeight,
-          rotate: imgRotate,
-          webgl,
-        };
-        this._store.addData([lastData]);
-      } else {
-        buf2pix[method](img, lastData.src, imgWidth, imgHeight);
-      }
-    });
-  }
-
   renderControls() {
     let text = this.state.paused ? '继续' : '暂停';
     let editText = this.state.inEdit ? '编辑中' : '编辑';
@@ -308,7 +273,10 @@ export default class LiveImage extends Component {
   }
 
   renderEditCanvas() {
-    return this.state.inEdit && <EditLayer scale={this.state.scale}/>;
+    return this.state.inEdit &&
+      <EditLayer scale={this.state.scale}
+        onMeasure={this.props.onMeasure}
+      />;
   }
 
   renderImgList() {
@@ -343,9 +311,9 @@ export default class LiveImage extends Component {
       scaleStyle.direction = 'rtl';
     }
 
-
-
     let hwRatio = imgHeight / imgWidth;
+
+    let imgRotate = this.props.direction === DIRECTION.RIGHT ? 1 : 0;
 
     let props = this.getListProps(imgs);
     return (
@@ -354,6 +322,7 @@ export default class LiveImage extends Component {
           itemHeight={this.props.itemHeight}
           itemHwRatio={hwRatio}
           itemClazz={Image}
+          rotate={imgRotate}
           direction={listDirection}
           rtl={rtl}
           ref={(scroller) => {this._scroller = scroller;}}
@@ -374,8 +343,27 @@ export default class LiveImage extends Component {
     );
   }
 
+  createStore() {
+    return new Store({
+      maxLn: props.maxCacheData,
+      data: this.state.imgs,
+    });
+  }
+
+  addData(imgs) {
+    if (imgs) {
+      this._store.addImageData(imgs, {
+        imgWidth: this.props.imgWidth,
+        imgHeight: this.props.imgHeight,
+        webgl: this.props.webgl,
+      });
+    }
+  }
+
   componentWillMount() {
-    this._addData(this.props.imgs);
+    this.state.paused = this.props.paused;
+    this._store = this.props.store || this.createStore();
+    this.addData(this.props.imgs);
     if (!this._initPool && this.props.webgl) {
       let {
         imgWidth,
@@ -395,7 +383,9 @@ export default class LiveImage extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this._addData(nextProps.imgs)
+    if (nextProps.imgs) {
+      this.addData(nextProps.imgs);
+    }
   }
 
   componentDidMount() {
@@ -403,6 +393,7 @@ export default class LiveImage extends Component {
   }
 
   componentWillUnmount() {
+    cancelAnimationFrame(this._rafId);
     document.removeEventListener('keydown', this.onKeydown)
   }
 }

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
+import MeasureBox from './MeasureBox';
 
 const styles = {
   layer: {
@@ -15,6 +16,11 @@ const styles = {
 };
 
 export default class EditLayer extends Component {
+
+  static propTypes = {
+    onMeasure: PropTypes.func,
+  };
+
   onTouchStart(evt) {
     this._sp = this._getPosition(evt);
   }
@@ -23,6 +29,9 @@ export default class EditLayer extends Component {
     this.forceUpdate();
   }
   onTouchEnd(evt) {
+    if (this.props.onMeasure && this._measureBox) {
+      this.props.onMeasure(this._measureBox);
+    }
     this._sp = this._mp = null;
     this.forceUpdate();
   }
@@ -83,6 +92,25 @@ export default class EditLayer extends Component {
       return null;
     }
   }
+  renderMeasureBox() {
+    let p1 = this._sp;
+    let p2 = this._mp;
+    if (p1 && p2) {
+      let scale = this.props.scale || 1;
+      let w = Math.abs(p2.x - p1.x);
+      w = (w / scale).toFixed(0);
+      let h = Math.abs(p2.y - p1.y);
+      h = (h / scale).toFixed(0);
+      let layout = this._measureBox = {
+        top: Math.min(p2.y, p1.y),
+        left: Math.min(p2.x, p1.x),
+        width: Number(w),
+        height: Number(h),
+      }
+      return <MeasureBox {...layout} />
+    }
+    return null;
+  }
   render() {
     return (
       <div style={styles.layer}
@@ -94,8 +122,7 @@ export default class EditLayer extends Component {
         onTouchEnd={this.onTouchEnd.bind(this)}
         onMouseUp={this.onTouchEnd.bind(this)}
         onTouchCancel={this.onTouchEnd.bind(this)}>
-        {this.renderRect()}
-        {this.renderMeasure()}
+        {this.renderMeasureBox()}
       </div>
     )
   }

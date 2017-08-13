@@ -19,6 +19,10 @@ var _reactWebScroller = require('react-web-scroller');
 
 var _reactWebScroller2 = _interopRequireDefault(_reactWebScroller);
 
+var _Store = require('./Store');
+
+var _Store2 = _interopRequireDefault(_Store);
+
 var _List = require('./List');
 
 var _List2 = _interopRequireDefault(_List);
@@ -105,8 +109,6 @@ const styles = {
   }
 };
 
-let itemId = 0;
-
 class LiveImage extends _react.Component {
   constructor(props) {
     super(...arguments);
@@ -117,10 +119,6 @@ class LiveImage extends _react.Component {
       imgs: []
     };
     this.onKeydown = this.onKeydown.bind(this);
-    this._store = new _List.Store({
-      maxLn: props.maxCacheData,
-      data: this.state.imgs
-    });
   }
 
   _flow() {
@@ -257,40 +255,6 @@ class LiveImage extends _react.Component {
     };
   }
 
-  // 目前页面的结构采用多个Canvas, 每个Canvas画图片的一部分，数据流中的数据是2560*1的像素点
-  // 需要将数据流中多个数据合并成一个canvas描绘用数据
-  _addData(imgs = []) {
-    const {
-      imgWidth,
-      imgHeight,
-      webgl
-    } = this.props;
-
-    let imgRotate = this.props.direction === DIRECTION.RIGHT ? 1 : 0;
-
-    // 先填满store中最后一个未填满的data
-    let lastData = this._store.getLast();
-
-    // webgl: single channel does the work
-    let method = webgl ? 'bufCopy' : 'grayBuf2RgbaBuf';
-
-    imgs.forEach((img, idx) => {
-      if (!lastData || lastData.src.full) {
-        lastData = {
-          idx: itemId++,
-          src: _buf2pix2.default[method](img, null, imgWidth, imgHeight),
-          width: imgWidth,
-          height: imgHeight,
-          rotate: imgRotate,
-          webgl
-        };
-        this._store.addData([lastData]);
-      } else {
-        _buf2pix2.default[method](img, lastData.src, imgWidth, imgHeight);
-      }
-    });
-  }
-
   renderControls() {
     let text = this.state.paused ? '继续' : '暂停';
     let editText = this.state.inEdit ? '编辑中' : '编辑';
@@ -333,7 +297,9 @@ class LiveImage extends _react.Component {
   }
 
   renderEditCanvas() {
-    return this.state.inEdit && _react2.default.createElement(_EditLayer2.default, { scale: this.state.scale });
+    return this.state.inEdit && _react2.default.createElement(_EditLayer2.default, { scale: this.state.scale,
+      onMeasure: this.props.onMeasure
+    });
   }
 
   renderImgList() {
@@ -369,6 +335,8 @@ class LiveImage extends _react.Component {
 
     let hwRatio = imgHeight / imgWidth;
 
+    let imgRotate = this.props.direction === DIRECTION.RIGHT ? 1 : 0;
+
     let props = this.getListProps(imgs);
     return _react2.default.createElement(
       'div',
@@ -377,6 +345,7 @@ class LiveImage extends _react.Component {
         itemHeight: this.props.itemHeight,
         itemHwRatio: hwRatio,
         itemClazz: _Image2.default,
+        rotate: imgRotate,
         direction: listDirection,
         rtl: rtl,
         ref: scroller => {
@@ -398,8 +367,27 @@ class LiveImage extends _react.Component {
     );
   }
 
+  createStore() {
+    return new _Store2.default({
+      maxLn: props.maxCacheData,
+      data: this.state.imgs
+    });
+  }
+
+  addData(imgs) {
+    if (imgs) {
+      this._store.addImageData(imgs, {
+        imgWidth: this.props.imgWidth,
+        imgHeight: this.props.imgHeight,
+        webgl: this.props.webgl
+      });
+    }
+  }
+
   componentWillMount() {
-    this._addData(this.props.imgs);
+    this.state.paused = this.props.paused;
+    this._store = this.props.store || this.createStore();
+    this.addData(this.props.imgs);
     if (!this._initPool && this.props.webgl) {
       let {
         imgWidth,
@@ -419,7 +407,9 @@ class LiveImage extends _react.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this._addData(nextProps.imgs);
+    if (nextProps.imgs) {
+      this.addData(nextProps.imgs);
+    }
   }
 
   componentDidMount() {
@@ -427,6 +417,7 @@ class LiveImage extends _react.Component {
   }
 
   componentWillUnmount() {
+    cancelAnimationFrame(this._rafId);
     document.removeEventListener('keydown', this.onKeydown);
   }
 }
@@ -440,7 +431,10 @@ LiveImage.propTypes = {
   column: _propTypes2.default.number,
   scaleStep: _propTypes2.default.number,
   maxCacheData: _propTypes2.default.number,
-  webgl: _propTypes2.default.bool
+  webgl: _propTypes2.default.bool,
+  onMeasure: _propTypes2.default.func,
+  store: _propTypes2.default.object,
+  paused: _propTypes2.default.bool
 };
 LiveImage.defaultProps = {
   direction: DIRECTION.RIGHT,
@@ -451,5 +445,6 @@ LiveImage.defaultProps = {
   column: 1,
   scaleStep: .5,
   maxCacheData: 1000,
-  webgl: true
+  webgl: true,
+  paused: false
 };

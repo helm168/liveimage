@@ -2,7 +2,7 @@
   "name": "liveimage",
   "version": "1.0.0",
   "description": "An react component for live image",
-  "main": "build/LiveImage.js",
+  "main": "build/index.js",
   "scripts": {
     "build": "./node_modules/.bin/gulp build",
     "watch": "./node_modules/.bin/gulp watchJs",

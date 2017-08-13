@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import Scroller from 'react-web-scroller';
+import MeasureBox from './MeasureBox';
 
 const S_DIRECTION = {
   UP: 'up',
@@ -37,11 +38,34 @@ export default class List extends Component {
       width: this._initPadding.x,
       height: this._initPadding.y,
     };
-    this.state = {};
+    this.state = {
+      measureBoxs: [],
+    };
   }
 
   getDataSize(data) {
     return data && data.size();
+  }
+
+  renderMeasureBoxs() {
+    let measureBoxs = this.state.measureBoxs;
+    let position = this.getPosition();
+    let containerSize = this.getContainerSize();
+    // TODO: 考虑方向
+    measureBoxs.forEach(box => {
+      if (!box.positionMapped) {
+        box.positionMapped = true;
+        // 仅考虑向右移动的case， 以right为参考
+        box.right = containerSize.x - position.x - box.width - box.left;
+        delete box.left;
+        box.top = box.top - position.y;
+      }
+    });
+    return (
+      <div style={styles.measureBoxContainer} className="_measureBoxs">
+        {measureBoxs.map(box => <MeasureBox key={box.id} {...box} />)}
+      </div>
+    );
   }
 
   // list无限滚动需要知道list item的高度
@@ -74,7 +98,12 @@ export default class List extends Component {
   }
 
   renderListItem(key, data, itemStyle) {
-    return <this.props.itemClazz key={key} {...data} style={itemStyle} />;
+    return <this.props.itemClazz key={key} {...data} style={itemStyle}
+      rotate={this.props.rotate}/>;
+  }
+
+  renderMeasureBox() {
+    return <EditLayer scale={this.state.scale}/>;
   }
 
   renderListItems() {
@@ -136,6 +165,7 @@ export default class List extends Component {
       <div className='_list' style={contentStyle}>
         <div style={holderStyle}></div>
         {this.renderItemHeightDetectorEl()}
+        {this.renderMeasureBoxs()}
         {items}
       </div>
     );
@@ -157,7 +187,18 @@ export default class List extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    let size = this.getDataSize(nextProps.data)
+    let size = this.getDataSize(nextProps.data);
+    let nextMeasureBoxs = nextProps.data.getMeasureBoxs() || [];
+    let mergeMeasureBox = [];
+    nextMeasureBoxs.forEach(box => {
+      let find = this.state.measureBoxs.find(thisBox => (thisBox.id === box.id));
+      if (!find) {
+        mergeMeasureBox.push(box);
+      } else {
+        mergeMeasureBox.push(find);
+      }
+    });
+    this.state.measureBoxs = mergeMeasureBox;
     if (size !== this._dataLn) {
       this._dataLn = size;
       this._scroller._refreshPosition();
@@ -244,66 +285,21 @@ export default class List extends Component {
     }
   }
 
+  getContainerSize() {
+    if (this._scroller) {
+      return this._scroller.getContainerSize();
+    } else {
+      return {
+        x: 0,
+        y: 0,
+      }
+    }
+  }
+
   scrollTo(x, y) {
     if (this._scroller) {
       this._scroller.scrollTo(x, y);
     }
-  }
-}
-
-// 用来控制数据缓存的类
-// 由于图片一直以流的方式显示，不仅ui需要动态删除，数据也需要删除，不然可能撑爆内存
-export class Store {
-  constructor(options = {}) {
-    this._maxLn = options.maxLn;
-    this._minLn = 0;
-    this._startIdx = 0;
-    this.setData(options.data);
-  }
-  getDataAt(idx) {
-    return this._data[idx - this._startIdx];
-  }
-  getLast() {
-    return this._data[this._data.length - 1];
-  }
-  getData() {
-    return this._data;
-  }
-  addData(data = []) {
-    this.setData(this._data.concat(data));
-  }
-  setData(data = []) {
-    if (data.length > this._maxLn) {
-      let delLn = data.length - this._maxLn;
-      this._startIdx += delLn;
-      if (this._startIdx > this._minLn) {
-        this._data = data.slice(delLn - (this._startIdx - this._minLn));
-        this._startIdx = this._minLn;
-      } else {
-        this._data = data.slice(delLn);
-      }
-    } else {
-      this._startIdx = 0;
-      this._data = data;
-    }
-  }
-  setMin(minLn) {
-    this._minLn = minLn;
-  }
-  setMax(maxLn) {
-    this._maxLn = maxLn;
-  }
-  size() {
-    return this._data.length + this._startIdx;
-  }
-  isWritable() {
-    return this._data.length < this._maxLn;
-  }
-  start() {
-    return this._startIdx;
-  }
-  clear() {
-    this._startIdx = 0;
   }
 }
 
@@ -363,5 +359,13 @@ let styles = {
   itemHeightDetector: {
     position: 'absolute',
     top: 0,
-  }
+  },
+  measureBoxContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    zIndex: 10,
+  },
 };
