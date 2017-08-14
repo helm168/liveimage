@@ -14,9 +14,9 @@ import LiveImage from 'liveimage';
 
 ## Props
 ### direction
-Type: `Eumn` 
+Type: `Eumn`
 
-`import { DIRECTION } from 'liveimage';` 
+`import { DIRECTION } from 'liveimage';`
 
 图片滚动的方向，目前支持三个方向：DIRECTION.LEFT/RIGHT/TOP  
 
@@ -48,7 +48,7 @@ default: `320`
 ### itemHeight
 Type: `number`  
 
-组件本身是一个infinte list，需要知道每个List item的高度做位置计算, 可以不传，如果不传，使用`imgHeight/imgWidth * 组件width`来计算。 
+组件本身是一个infinte list，需要知道每个List item的高度做位置计算, 可以不传，如果不传，使用`imgHeight/imgWidth * 组件width`来计算。
 
 **对于图片数据，为了保持比例，最好不传**  
 
@@ -81,8 +81,49 @@ Type: `number`
 default: `1000`
 
 ### webgl
-Type: `number` 
+Type: `number`
 
 是否采用webgl渲染  
 
 default: `true`
+
+### store
+Type: `object`
+
+`import { Store } from 'liveimage';`
+
+图片数据管理对象, 关于store的用法参考这里
+
+default: `true`
+
+### onMeasure(box)
+Type: `function`
+
+`box: {left, top, width, height, id}`  
+编辑回调函数，用来通过外部组件当前的编辑矩形
+
+
+
+## Store
+### constructor(options)
+```
+options: {maxLn, data}
+maxLn: 同maxCacheData
+data：同imgs
+```
+
+### addImageData(data)
+`data: 同imgs`  
+添加图片数据
+
+### addMeasureBox(measureBox)
+`measureBox: {left, top, width, height, id}`  
+添加测量矩形，该方法是`实时`的，left/top是相对于当时的屏幕坐标来计算的，后续会随着图片滚动  
+id: `required`，矩形的唯一id，通过id来进行唯一性判断
+
+### setMeasureBoxs(measureBoxs)
+`measureBoxs: [measureBox]`  
+设置测量矩形数组，使用该方法可以一次性设置多个测量矩形以及清除已经设置的矩形
+
+### getMeasureBoxs()
+取得当前设置的矩形数组
