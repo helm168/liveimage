@@ -369,7 +369,7 @@ class LiveImage extends _react.Component {
 
   createStore() {
     return new _Store2.default({
-      maxLn: props.maxCacheData,
+      maxLn: this.props.maxCacheData,
       data: this.state.imgs
     });
   }

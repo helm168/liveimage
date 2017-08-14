@@ -345,7 +345,7 @@ export default class LiveImage extends Component {
 
   createStore() {
     return new Store({
-      maxLn: props.maxCacheData,
+      maxLn: this.props.maxCacheData,
       data: this.state.imgs,
     });
   }
