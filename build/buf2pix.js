@@ -55,7 +55,7 @@ exports.default = {
     for (let i = 0; i < minHeight; i++) {
       rgbaBuf.fillHeight++;
       for (let j = 0; j < minWidth; j++) {
-        let distJ = mapFn(j);
+        let distJ = mapFn(j) + i * buf.imageWidth;
         imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
         imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
         imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
@@ -92,7 +92,7 @@ exports.default = {
     for (let i = 0; i < minHeight; i++) {
       bufTo.fillHeight++;
       for (let j = 0; j < minWidth; j++) {
-        let distJ = mapFn(j);
+        let distJ = mapFn(j) + i * buf.imageWidth;
         imageBuffer[bufTo.idx++] = buf.imageBuffer[distJ];
       }
     }
