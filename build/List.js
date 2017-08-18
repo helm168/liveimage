@@ -25,6 +25,8 @@ const S_DIRECTION = {
   DOWN: 'down'
 };
 
+const noop = () => {};
+
 class List extends _react.Component {
 
   constructor(props) {
@@ -225,9 +227,38 @@ class List extends _react.Component {
       this._calcVisualItemCount(this.props.height, this._itemHeight);
       resize();
     };
+    // 第一次render时可能需要识别itemHeight, 这里立即第二次render可以保证宽度正常
+    // 主要解决组件初始化后立即调用scrollTo方法
+    requestAnimationFrame(() => {
+      this.forceUpdate();
+      this._scroller._refreshPosition();
+      this._didMount = true;
+      if (this._initPosotion) {
+        this.scrollTo(this._initPosotion.x, this._initPosotion.y);
+      }
+    });
   }
 
-  componentDidUpdate() {}
+  componentDidUpdate() {
+    this.onConsumeProcess();
+  }
+
+  /*
+   * 通知外部组件当前数据的消费情况
+   * TODO: 垂直方向的考虑
+   */
+  onConsumeProcess() {
+    if (this.props.blockscope) {
+      let px = this.getPosition().x;
+      let mpx = this.getMinPosition().x;
+      let remainScroll = Math.abs(px - mpx);
+      if (remainScroll > this.props.blockscope[1]) {
+        this.props.onBlock();
+      } else if (remainScroll < this.props.blockscope[0]) {
+        this.props.onDrain();
+      }
+    }
+  }
 
   onScroll(scroller, position) {
     let axis = this.props.direction === 'v' ? 'y' : 'x';
@@ -291,6 +322,17 @@ class List extends _react.Component {
     }
   }
 
+  getMinPosition() {
+    if (this._scroller) {
+      return this._scroller.getMinPosition();
+    } else {
+      return {
+        x: 0,
+        y: 0
+      };
+    }
+  }
+
   getContainerSize() {
     if (this._scroller) {
       return this._scroller.getContainerSize();
@@ -303,8 +345,10 @@ class List extends _react.Component {
   }
 
   scrollTo(x, y) {
-    if (this._scroller) {
+    if (this._didMount) {
       this._scroller.scrollTo(x, y);
+    } else {
+      this._initPosotion = { x: x, y: y };
     }
   }
 }
@@ -319,7 +363,9 @@ List.propTypes = {
   rtl: _react.PropTypes.bool
 };
 List.defaultProps = {
-  direction: 'v'
+  direction: 'v',
+  onBlock: noop,
+  onDrain: noop
 };
 class PositionMap {
   constructor(options) {

@@ -7,6 +7,7 @@ let itemId = 0;
 export default class Store {
   constructor(options = {}) {
     this._maxLn = options.maxLn;
+    this._fMaxLn = options.fMaxLn;
     this._minLn = 0;
     this._startIdx = 0;
     this.setData(options.data);
@@ -63,7 +64,10 @@ export default class Store {
     this._measureBoxs.push(measureBox);
   }
   setData(data = []) {
-    if (data.length > this._maxLn) {
+    if (this._fMaxLn && data.length > this._fMaxLn) {
+      let delLn = data.length - this._maxLn;
+      this._data = data.slice(delLn);
+    } else if (data.length > this._maxLn) {
       let delLn = data.length - this._maxLn;
       this._startIdx += delLn;
       if (this._startIdx > this._minLn) {

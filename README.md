@@ -29,6 +29,27 @@ Type: `number`
 
 default: `1`
 
+### autoVelocity
+Type: `boolean`
+
+是否自动调整速度
+
+default: `true`
+
+### minVelocity
+Type: `boolean`
+
+自动调整最小速度
+
+default: `0.5`
+
+### maxVelocity
+Type: `boolean`
+
+自动调整最大速度
+
+default: `2`
+
 ### imgWidth
 Type: `number`  
 
@@ -94,7 +115,12 @@ Type: `object`
 
 图片数据管理对象, 关于store的用法参考这里
 
-default: `true`
+### blockscope
+Type: `array`
+
+加减速范围，待渲染图片的长度处于此范围之外时会触发自动加减速
+
+default: `[200, 300]`
 
 ### onMeasure(box)
 Type: `function`
@@ -102,6 +128,15 @@ Type: `function`
 `box: {left, top, width, height, id}`  
 编辑回调函数，用来通过外部组件当前的编辑矩形
 
+## Method
+### scrollTo(position)
+`position: {x: 0, y: 0}`
+滚动到某个位置
+
+## Method
+### scrollTo(position)
+`position: {x: 0, y: 0}`
+滚动到某个位置
 
 
 ## Store
@@ -109,6 +144,7 @@ Type: `function`
 ```
 options: {maxLn, data}
 maxLn: 同maxCacheData
+fMaxLn: 强制清除缓存的最大值，不管数据有没有使用过
 data：同imgs
 ```
 

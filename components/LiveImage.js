@@ -87,6 +87,10 @@ export default class LiveImage extends Component {
   static propTypes = {
     direction: PropTypes.string,
     velocity: PropTypes.number,
+    autoVelocity: PropTypes.bool,
+    minVelocity: PropTypes.number,
+    maxVelocity: PropTypes.number,
+    blockscope: PropTypes.array,
     imgWidth: PropTypes.number,
     imgHeight: PropTypes.number,
     imgs: PropTypes.array,
@@ -101,7 +105,11 @@ export default class LiveImage extends Component {
 
   static defaultProps = {
     direction: DIRECTION.RIGHT,
-    velocity: 1,
+    velocity: .5,
+    autoVelocity: true,
+    minVelocity: .5,
+    maxVelocity: 2,
+    blockscope: [200, 300],
     imgWidth: 2560,
     imgHeight: 320,
     // itemHeight: 176,
@@ -130,14 +138,11 @@ export default class LiveImage extends Component {
   }
 
   _doFlow() {
-    let {
-      velocity,
-    } = this.props;
     cancelAnimationFrame(this._rafId);
     if (!this._inFlow && !this.state.paused) {
       this._rafId = requestAnimationFrame(() => {
         this._inFlow = true;
-        let position = this._positionAdd(velocity);
+        let position = this._positionAdd(this._velocity);
         this._moveTo(position);
         this._inFlow = false;
         this._doFlow();
@@ -164,6 +169,19 @@ export default class LiveImage extends Component {
 
   _moveTo(position) {
     this._scroller.scrollTo(position.x, position.y);
+  }
+
+  scrollTo(position) {
+    if (this._scroller) {
+      this._moveTo(position);
+    }
+  }
+
+  getPosition() {
+    if (this._scroller) {
+      return this._scroller.getPosition();
+    }
+    return {x : 0, y: 0};
   }
 
   onPauseClick() {
@@ -233,6 +251,14 @@ export default class LiveImage extends Component {
         break;
       default:
     }
+  }
+
+  onBlock() {
+    this._velocity = Math.min(this._velocity + .5, this.props.maxVelocity);
+  }
+
+  onDrain() {
+    this._velocity = Math.max(this._velocity - .5, this.props.minVelocity);
   }
 
   getListProps(imgs=[]) {
@@ -316,6 +342,7 @@ export default class LiveImage extends Component {
     let imgRotate = this.props.direction === DIRECTION.RIGHT ? 1 : 0;
 
     let props = this.getListProps(imgs);
+    let blockscope = this.props.autoVelocity ? this.props.blockscope : null;
     return (
       <div className="_scale_container" style={scaleStyle}>
         <List {...props}
@@ -325,6 +352,9 @@ export default class LiveImage extends Component {
           rotate={imgRotate}
           direction={listDirection}
           rtl={rtl}
+          onBlock={this.onBlock.bind(this)}
+          onDrain={this.onDrain.bind(this)}
+          blockscope={blockscope}
           ref={(scroller) => {this._scroller = scroller;}}
         />
       </div>
@@ -390,10 +420,11 @@ export default class LiveImage extends Component {
 
   componentDidMount() {
     document.addEventListener('keydown', this.onKeydown);
+    this._velocity = this.props.velocity;
   }
 
   componentWillUnmount() {
     cancelAnimationFrame(this._rafId);
-    document.removeEventListener('keydown', this.onKeydown)
+    document.removeEventListener('keydown', this.onKeydown);
   }
 }

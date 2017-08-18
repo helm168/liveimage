@@ -139,14 +139,11 @@ class LiveImage extends _react.Component {
   }
 
   _doFlow() {
-    let {
-      velocity
-    } = this.props;
     cancelAnimationFrame(this._rafId);
     if (!this._inFlow && !this.state.paused) {
       this._rafId = requestAnimationFrame(() => {
         this._inFlow = true;
-        let position = this._positionAdd(velocity);
+        let position = this._positionAdd(this._velocity);
         this._moveTo(position);
         this._inFlow = false;
         this._doFlow();
@@ -173,6 +170,19 @@ class LiveImage extends _react.Component {
 
   _moveTo(position) {
     this._scroller.scrollTo(position.x, position.y);
+  }
+
+  scrollTo(position) {
+    if (this._scroller) {
+      this._moveTo(position);
+    }
+  }
+
+  getPosition() {
+    if (this._scroller) {
+      return this._scroller.getPosition();
+    }
+    return { x: 0, y: 0 };
   }
 
   onPauseClick() {
@@ -242,6 +252,14 @@ class LiveImage extends _react.Component {
         break;
       default:
     }
+  }
+
+  onBlock() {
+    this._velocity = Math.min(this._velocity + .5, this.props.maxVelocity);
+  }
+
+  onDrain() {
+    this._velocity = Math.max(this._velocity - .5, this.props.minVelocity);
   }
 
   getListProps(imgs = []) {
@@ -338,6 +356,7 @@ class LiveImage extends _react.Component {
     let imgRotate = this.props.direction === DIRECTION.RIGHT ? 1 : 0;
 
     let props = this.getListProps(imgs);
+    let blockscope = this.props.autoVelocity ? this.props.blockscope : null;
     return _react2.default.createElement(
       'div',
       { className: '_scale_container', style: scaleStyle },
@@ -348,6 +367,9 @@ class LiveImage extends _react.Component {
         rotate: imgRotate,
         direction: listDirection,
         rtl: rtl,
+        onBlock: this.onBlock.bind(this),
+        onDrain: this.onDrain.bind(this),
+        blockscope: blockscope,
         ref: scroller => {
           this._scroller = scroller;
         }
@@ -414,6 +436,7 @@ class LiveImage extends _react.Component {
 
   componentDidMount() {
     document.addEventListener('keydown', this.onKeydown);
+    this._velocity = this.props.velocity;
   }
 
   componentWillUnmount() {
@@ -425,6 +448,10 @@ exports.default = LiveImage;
 LiveImage.propTypes = {
   direction: _propTypes2.default.string,
   velocity: _propTypes2.default.number,
+  autoVelocity: _propTypes2.default.bool,
+  minVelocity: _propTypes2.default.number,
+  maxVelocity: _propTypes2.default.number,
+  blockscope: _propTypes2.default.array,
   imgWidth: _propTypes2.default.number,
   imgHeight: _propTypes2.default.number,
   imgs: _propTypes2.default.array,
@@ -438,7 +465,11 @@ LiveImage.propTypes = {
 };
 LiveImage.defaultProps = {
   direction: DIRECTION.RIGHT,
-  velocity: 1,
+  velocity: .5,
+  autoVelocity: true,
+  minVelocity: .5,
+  maxVelocity: 2,
+  blockscope: [200, 300],
   imgWidth: 2560,
   imgHeight: 320,
   // itemHeight: 176,
