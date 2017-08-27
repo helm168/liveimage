@@ -122,6 +122,13 @@ Type: `array`
 
 default: `[200, 300]`
 
+### showControls
+Type: `boolean`  
+
+是否显示控制按钮以及添加控制快捷键
+
+default: `true`
+
 ### onMeasure(box)
 Type: `function`
 
@@ -133,10 +140,19 @@ Type: `function`
 `position: {x: 0, y: 0}`
 滚动到某个位置
 
-## Method
+### getPosition()
+`position: {x: 0, y: 0}`  
+当前滚动的位置
+
 ### scrollTo(position)
-`position: {x: 0, y: 0}`
+`position: {x: 0, y: 0}`  
 滚动到某个位置
+
+### enterEditMode()
+进入编辑模式
+
+### exitEditMode()
+退出编辑模式
 
 
 ## Store

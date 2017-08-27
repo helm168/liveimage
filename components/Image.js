@@ -14,13 +14,16 @@ const styles = {
 
 export default class Image extends Component {
   static propTypes = {
-    width: PropTypes.number.isRequired,
-    height: PropTypes.number.isRequired,
-    src: PropTypes.any.isRequired,
+    width: PropTypes.number,
+    height: PropTypes.number,
+    src: PropTypes.any,
   };
 
   renderImg() {
-    if (typeof src === 'string') {
+    let src = this.props.src;
+    if (!src) {
+      return null;
+    } else if (typeof src === 'string') {
       return <HTMLImage {...this.props} />
     } else if (this.props.webgl) {
       return <WebglImage {...this.props} />

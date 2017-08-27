@@ -31,6 +31,7 @@ export default class List extends Component {
     this._currentScrollItemCount = 0;
     this._listItems = [];
     this._visualItemCount = 0;
+    this._initPosition = {x: 0, y: 0};
 
     // 多加点padding, 隐藏启动时的抖动
     this._initPadding = {
@@ -131,7 +132,10 @@ export default class List extends Component {
     if (this._sDirection === S_DIRECTION.UP) {
       this._paddingStyle[heightName] -= itemCount * itemHeight;
       for (let i = itemCount - 1; i >= 0; i--) {
-        items.pop();
+        // 当items的数量超过最大数量时才删除
+        if (items.length >= itemLength) {
+          items.pop();
+        }
         let dataIdx = topItemIdx + i;
         let itemData = data.getDataAt(dataIdx);
         if (itemData) {
@@ -140,22 +144,29 @@ export default class List extends Component {
       }
     } else if (this._sDirection === S_DIRECTION.DOWN) {
       this._paddingStyle[heightName] += itemCount * itemHeight;
+      let missIds = [];
       for (let i = 0; i < itemCount; i++) {
-        items.shift();
+        // 当items的数量超过最大数量时才删除
+        if (items.length >= itemLength) {
+          items.shift();
+        }
         let dataIdx = topItemIdx + i + itemLength - itemCount;
         let itemData = data.getDataAt(dataIdx);
+
         if (itemData) {
           items.push(this.renderListItem(dataIdx, itemData, itemStyle));
+        } else {
+          missIds.push(dataIdx);
         }
       }
+      console.log('missIds', missIds.join(','), data.start());
     } else {
       this._listItems = items = [];
       for(let i = 0; i < renderItemCount; i++) {
         let dataIdx = topItemIdx + i;
-        let itemData = data.getDataAt(dataIdx);
-        if (itemData) {
-          items.push(this.renderListItem(dataIdx, itemData, itemStyle));
-        }
+        // 考虑store数据被截断的case
+        let itemData = data.getDataAt(dataIdx) || {};
+        items.push(this.renderListItem(dataIdx, itemData, itemStyle));
       }
     }
     this._sDirection = null;
@@ -227,9 +238,7 @@ export default class List extends Component {
       this.forceUpdate();
       this._scroller._refreshPosition();
       this._didMount = true;
-      if (this._initPosotion) {
-        this.scrollTo(this._initPosotion.x, this._initPosotion.y);
-      }
+      this.scrollTo(this._initPosition.x, this._initPosition.y);
     });
   }
 
@@ -306,13 +315,10 @@ export default class List extends Component {
   }
 
   getPosition() {
-    if (this._scroller) {
+    if (this._didMount) {
       return this._scroller.getPosition();
     } else {
-      return {
-        x: 0,
-        y: 0,
-      }
+      return this._initPosition;
     }
   }
 
@@ -342,7 +348,7 @@ export default class List extends Component {
     if (this._didMount) {
       this._scroller.scrollTo(x, y);
     } else {
-      this._initPosotion = {x: x, y: y};
+      this._initPosition = {x: x, y: y};
     }
   }
 }

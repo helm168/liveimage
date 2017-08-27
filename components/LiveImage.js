@@ -101,6 +101,7 @@ export default class LiveImage extends Component {
     onMeasure: PropTypes.func,
     store: PropTypes.object,
     paused: PropTypes.bool,
+    showControls: PropTypes.bool,
   }
 
   static defaultProps = {
@@ -118,6 +119,7 @@ export default class LiveImage extends Component {
     maxCacheData: 1000,
     webgl: true,
     paused: false,
+    showControls: true,
   };
 
   _flow() {
@@ -151,7 +153,7 @@ export default class LiveImage extends Component {
   }
 
   _positionAdd(distance) {
-    let position = this._scroller.getPosition();
+    let position = this.getPosition();
     switch(this.props.direction) {
       case DIRECTION.TOP:
         position.y += distance;
@@ -169,6 +171,13 @@ export default class LiveImage extends Component {
 
   _moveTo(position) {
     this._scroller.scrollTo(position.x, position.y);
+  }
+
+  _addKeydownListener() {
+    if (this.props.showControls && this._keydownListenerAdded) {
+      document.addEventListener('keydown', this.onKeydown);
+      this._keydownListenerAdded = true;
+    }
   }
 
   scrollTo(position) {
@@ -273,6 +282,7 @@ export default class LiveImage extends Component {
   }
 
   renderControls() {
+    if (!this.props.showControls) return null;
     let text = this.state.paused ? '继续' : '暂停';
     let editText = this.state.inEdit ? '编辑中' : '编辑';
     let style;
@@ -291,8 +301,32 @@ export default class LiveImage extends Component {
     );
   }
 
+  enterEditMode() {
+    this.setState({
+      inEdit: true,
+      paused: true,
+    });
+    this.forceUpdate();
+  }
+
+  exitEditMode() {
+    this.setState({
+      inEdit: false,
+      paused: true,
+    });
+    this.forceUpdate();
+  }
+
+  flow() {
+    this._flow();
+  }
+
+  pause() {
+    this._pause();
+  }
+
   renderMask() {
-    return !this.state.paused &&
+    return this.props.showControls && !this.state.paused &&
       <div className="_mask" style={styles.mask}
         onClick={this.onMaskClick.bind(this)}
       ></div>;
@@ -412,6 +446,13 @@ export default class LiveImage extends Component {
     }
   }
 
+  shouldComponentUpdate() {
+    if (this.state.paused || this.state.inEdit) {
+      return false;
+    }
+    return true;
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.imgs) {
       this.addData(nextProps.imgs);
@@ -419,12 +460,13 @@ export default class LiveImage extends Component {
   }
 
   componentDidMount() {
-    document.addEventListener('keydown', this.onKeydown);
     this._velocity = this.props.velocity;
+    this._addKeydownListener();
   }
 
   componentWillUnmount() {
     cancelAnimationFrame(this._rafId);
     document.removeEventListener('keydown', this.onKeydown);
+    this._keydownListenerAdded = false;
   }
 }

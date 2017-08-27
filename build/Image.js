@@ -37,7 +37,10 @@ const styles = {
 class Image extends _react.Component {
 
   renderImg() {
-    if (typeof src === 'string') {
+    let src = this.props.src;
+    if (!src) {
+      return null;
+    } else if (typeof src === 'string') {
       return _react2.default.createElement(_HTMLImage2.default, this.props);
     } else if (this.props.webgl) {
       return _react2.default.createElement(_WebglImage2.default, this.props);
@@ -56,7 +59,7 @@ class Image extends _react.Component {
 }
 exports.default = Image;
 Image.propTypes = {
-  width: _propTypes2.default.number.isRequired,
-  height: _propTypes2.default.number.isRequired,
-  src: _propTypes2.default.any.isRequired
+  width: _propTypes2.default.number,
+  height: _propTypes2.default.number,
+  src: _propTypes2.default.any
 };

@@ -152,7 +152,7 @@ class LiveImage extends _react.Component {
   }
 
   _positionAdd(distance) {
-    let position = this._scroller.getPosition();
+    let position = this.getPosition();
     switch (this.props.direction) {
       case DIRECTION.TOP:
         position.y += distance;
@@ -170,6 +170,13 @@ class LiveImage extends _react.Component {
 
   _moveTo(position) {
     this._scroller.scrollTo(position.x, position.y);
+  }
+
+  _addKeydownListener() {
+    if (this.props.showControls && this._keydownListenerAdded) {
+      document.addEventListener('keydown', this.onKeydown);
+      this._keydownListenerAdded = true;
+    }
   }
 
   scrollTo(position) {
@@ -274,6 +281,7 @@ class LiveImage extends _react.Component {
   }
 
   renderControls() {
+    if (!this.props.showControls) return null;
     let text = this.state.paused ? '继续' : '暂停';
     let editText = this.state.inEdit ? '编辑中' : '编辑';
     let style;
@@ -308,8 +316,32 @@ class LiveImage extends _react.Component {
     );
   }
 
+  enterEditMode() {
+    this.setState({
+      inEdit: true,
+      paused: true
+    });
+    this.forceUpdate();
+  }
+
+  exitEditMode() {
+    this.setState({
+      inEdit: false,
+      paused: true
+    });
+    this.forceUpdate();
+  }
+
+  flow() {
+    this._flow();
+  }
+
+  pause() {
+    this._pause();
+  }
+
   renderMask() {
-    return !this.state.paused && _react2.default.createElement('div', { className: '_mask', style: styles.mask,
+    return this.props.showControls && !this.state.paused && _react2.default.createElement('div', { className: '_mask', style: styles.mask,
       onClick: this.onMaskClick.bind(this)
     });
   }
@@ -428,6 +460,13 @@ class LiveImage extends _react.Component {
     }
   }
 
+  shouldComponentUpdate() {
+    if (this.state.paused || this.state.inEdit) {
+      return false;
+    }
+    return true;
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.imgs) {
       this.addData(nextProps.imgs);
@@ -435,13 +474,14 @@ class LiveImage extends _react.Component {
   }
 
   componentDidMount() {
-    document.addEventListener('keydown', this.onKeydown);
     this._velocity = this.props.velocity;
+    this._addKeydownListener();
   }
 
   componentWillUnmount() {
     cancelAnimationFrame(this._rafId);
     document.removeEventListener('keydown', this.onKeydown);
+    this._keydownListenerAdded = false;
   }
 }
 exports.default = LiveImage;
@@ -461,7 +501,8 @@ LiveImage.propTypes = {
   webgl: _propTypes2.default.bool,
   onMeasure: _propTypes2.default.func,
   store: _propTypes2.default.object,
-  paused: _propTypes2.default.bool
+  paused: _propTypes2.default.bool,
+  showControls: _propTypes2.default.bool
 };
 LiveImage.defaultProps = {
   direction: DIRECTION.RIGHT,
@@ -477,5 +518,6 @@ LiveImage.defaultProps = {
   scaleStep: .5,
   maxCacheData: 1000,
   webgl: true,
-  paused: false
+  paused: false,
+  showControls: true
 };

@@ -74,9 +74,11 @@ class Store {
     this._measureBoxs.push(measureBox);
   }
   setData(data = []) {
+    if (this._froze) return;
     if (this._fMaxLn && data.length > this._fMaxLn) {
       let delLn = data.length - this._maxLn;
       this._data = data.slice(delLn);
+      this._startIdx += delLn;
     } else if (data.length > this._maxLn) {
       let delLn = data.length - this._maxLn;
       this._startIdx += delLn;
