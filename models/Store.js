@@ -86,6 +86,9 @@ export default class Store {
   setMin(minLn) {
     this._minLn = minLn;
   }
+  getMin() {
+    return this._minLn;
+  }
   setMax(maxLn) {
     this._maxLn = maxLn;
   }

@@ -84,6 +84,18 @@ export default class LiveImage extends Component {
     this.onKeydown = this.onKeydown.bind(this);
   }
 
+  getChildContext() {
+    let dPix2cssRatio = 1;
+    // TODO 方向
+    if (this.el) {
+      dPix2cssRatio = this.props.imgWidth / this.el.clientHeight;
+    }
+    return {
+      mm2dPixRatio: this.props.mm2dPixRatio,
+      dPix2cssRatio,
+    };
+  }
+
   static propTypes = {
     direction: PropTypes.string,
     velocity: PropTypes.number,
@@ -102,6 +114,8 @@ export default class LiveImage extends Component {
     store: PropTypes.object,
     paused: PropTypes.bool,
     showControls: PropTypes.bool,
+    // 实际尺寸(mm)和物理像素的比值
+    mm2dPixRatio: PropTypes.number,
   }
 
   static defaultProps = {
@@ -120,7 +134,13 @@ export default class LiveImage extends Component {
     webgl: true,
     paused: false,
     showControls: true,
-  };
+    mm2dPixRatio: 1,
+  }
+
+  static childContextTypes = {
+    mm2dPixRatio: PropTypes.number,
+    dPix2cssRatio: PropTypes.number,
+  }
 
   _flow() {
     if (this.state.paused && !this.state.inEdit) {
@@ -221,7 +241,8 @@ export default class LiveImage extends Component {
     this.setState({
       inEdit: !this.state.inEdit,
       paused: true,
-    })
+    });
+    this.forceUpdate();
   }
 
   onKeydown(evt) {
@@ -234,6 +255,7 @@ export default class LiveImage extends Component {
             inEdit: true,
             paused: true,
           });
+          this.forceUpdate();
         }
         break;
       // ESC
@@ -241,6 +263,7 @@ export default class LiveImage extends Component {
         this.setState({
           inEdit: false,
         });
+        this.forceUpdate();
         break;
       // s
       case 83:
@@ -248,6 +271,7 @@ export default class LiveImage extends Component {
           this.setState({
             paused: true,
           });
+          this.forceUpdate();
         }
         break;
         // g
@@ -256,6 +280,7 @@ export default class LiveImage extends Component {
           this.setState({
             paused: false,
           });
+          this.forceUpdate();
         }
         break;
       default:
@@ -398,7 +423,8 @@ export default class LiveImage extends Component {
   render() {
     this._doFlow();
     return (
-      <div className="_liveimg" style={styles.container}>
+      <div className="_liveimg" style={styles.container}
+        ref={(el) => this.el = el}>
         {this.renderControls()}
         {this.renderMask()}
         {this.renderEditCanvas()}

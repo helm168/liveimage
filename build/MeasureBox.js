@@ -3,8 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+exports.UNIT_TYPE = undefined;
 
 var _react = require('react');
 
@@ -20,36 +19,72 @@ var _propTypes2 = _interopRequireDefault(_propTypes);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+const UNIT_TYPE = exports.UNIT_TYPE = {
+  MM: 'MM',
+  CSS: 'CSS'
+};
+
 class MeasureBox extends _react.Component {
-  getStyle() {
-    return _extends({
-      position: 'absolute'
-    }, this.props);
+  getRenderProps() {
+    let {
+      width,
+      height,
+      lnUnit
+    } = this.props;
+    let {
+      mm2dPixRatio,
+      dPix2cssRatio
+    } = this.context;
+    let mm2cssRatio = mm2dPixRatio * dPix2cssRatio;
+    if (lnUnit == UNIT_TYPE.CSS) {
+      return {
+        cssWidth: width,
+        cssHeight: height,
+        mmWidth: (width * mm2cssRatio).toFixed(0),
+        mmHeight: (height * mm2cssRatio).toFixed(0)
+      };
+    }
+    return {
+      cssWidth: (width / mm2cssRatio).toFixed(0),
+      cssHeight: (height / mm2cssRatio).toFixed(0),
+      mmWidth: width,
+      mmHeight: height
+    };
   }
-  renderRect() {
+  getStyle(renderProps) {
+    return Object.assign({}, this.props, {
+      position: 'absolute',
+      width: renderProps.cssWidth,
+      height: renderProps.cssHeight
+    });
+  }
+  renderRect(renderProps) {
     let style = {
-      width: this.props.width,
-      height: this.props.height,
+      width: renderProps.cssWidth,
+      height: renderProps.cssHeight,
       border: '1px dashed #fff'
     };
     return _react2.default.createElement('div', { style: style });
   }
-  renderMeasure() {
+  renderMeasure(renderProps) {
     let {
-      width,
-      height,
       top,
       left
     } = this.props;
+    let {
+      cssWidth,
+      mmWidth,
+      mmHeight
+    } = renderProps;
     let style = {
       position: 'absolute',
-      left: width + 5,
+      left: cssWidth + 5,
       top: -20,
       color: '#fff',
       background: '#68af02',
       padding: '3px 5px'
     };
-    let text = `w:${width} h:${height}`;
+    let text = `w:${mmWidth} h:${mmHeight}`;
     return _react2.default.createElement(
       'p',
       { style: style },
@@ -57,14 +92,15 @@ class MeasureBox extends _react.Component {
     );
   }
   render() {
+    let renderProps = this.getRenderProps();
     return _react2.default.createElement(
       'div',
-      { style: this.getStyle(),
+      { style: this.getStyle(renderProps),
         ref: el => {
           this.el = el;
         } },
-      this.renderRect(),
-      this.renderMeasure()
+      this.renderRect(renderProps),
+      this.renderMeasure(renderProps)
     );
   }
 }
@@ -74,5 +110,13 @@ MeasureBox.propTypes = {
   right: _propTypes2.default.number,
   top: _propTypes2.default.number.isRequired,
   width: _propTypes2.default.number.isRequired,
-  height: _propTypes2.default.number.isRequired
+  height: _propTypes2.default.number.isRequired,
+  lnUnit: _propTypes2.default.string
+};
+MeasureBox.defaultProps = {
+  lnUnit: UNIT_TYPE.MM
+};
+MeasureBox.contextTypes = {
+  mm2dPixRatio: _propTypes2.default.number,
+  dPix2cssRatio: _propTypes2.default.number
 };

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import MeasureBox from './MeasureBox';
+import MeasureBox, { UNIT_TYPE } from './MeasureBox';
 
 const styles = {
   layer: {
@@ -52,46 +52,6 @@ export default class EditLayer extends Component {
     }
     return position;
   }
-  renderRect() {
-    let p1 = this._sp;
-    let p2 = this._mp;
-    if (p1 && p2) {
-      let style = {
-        position: 'absolute',
-        width: Math.abs(p2.x - p1.x),
-        height: Math.abs(p2.y - p1.y),
-        left: Math.min(p2.x, p1.x),
-        top: Math.min(p2.y, p1.y),
-        border: '1px dashed #fff',
-      }
-      return <div style={style}></div>
-    } else {
-      return null;
-    }
-  }
-  renderMeasure() {
-    let p1 = this._sp;
-    let p2 = this._mp;
-    let scale = this.props.scale || 1;
-    if (p1 && p2) {
-      let w = Math.abs(p2.x - p1.x);
-      w = (w / scale).toFixed(0);
-      let h = Math.abs(p2.y - p1.y);
-      h = (h / scale).toFixed(0);
-      let style = {
-        position: 'absolute',
-        left: Math.max(p2.x, p1.x) + 5,
-        top: Math.min(p2.y, p1.y) - 20,
-        color: '#fff',
-        background: '#68af02',
-        padding: '3px 24px',
-      };
-      let text = `w:${w} h:${h}`;
-      return <p style={style}>{text}</p>
-    } else {
-      return null;
-    }
-  }
   renderMeasureBox() {
     let p1 = this._sp;
     let p2 = this._mp;
@@ -107,7 +67,7 @@ export default class EditLayer extends Component {
         width: Number(w),
         height: Number(h),
       }
-      return <MeasureBox {...layout} />
+      return <MeasureBox {...layout} lnUnit={ UNIT_TYPE.CSS }/>
     }
     return null;
   }

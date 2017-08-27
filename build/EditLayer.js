@@ -4,6 +4,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
@@ -67,50 +69,6 @@ class EditLayer extends _react.Component {
     }
     return position;
   }
-  renderRect() {
-    let p1 = this._sp;
-    let p2 = this._mp;
-    if (p1 && p2) {
-      let style = {
-        position: 'absolute',
-        width: Math.abs(p2.x - p1.x),
-        height: Math.abs(p2.y - p1.y),
-        left: Math.min(p2.x, p1.x),
-        top: Math.min(p2.y, p1.y),
-        border: '1px dashed #fff'
-      };
-      return _react2.default.createElement('div', { style: style });
-    } else {
-      return null;
-    }
-  }
-  renderMeasure() {
-    let p1 = this._sp;
-    let p2 = this._mp;
-    let scale = this.props.scale || 1;
-    if (p1 && p2) {
-      let w = Math.abs(p2.x - p1.x);
-      w = (w / scale).toFixed(0);
-      let h = Math.abs(p2.y - p1.y);
-      h = (h / scale).toFixed(0);
-      let style = {
-        position: 'absolute',
-        left: Math.max(p2.x, p1.x) + 5,
-        top: Math.min(p2.y, p1.y) - 20,
-        color: '#fff',
-        background: '#68af02',
-        padding: '3px 24px'
-      };
-      let text = `w:${w} h:${h}`;
-      return _react2.default.createElement(
-        'p',
-        { style: style },
-        text
-      );
-    } else {
-      return null;
-    }
-  }
   renderMeasureBox() {
     let p1 = this._sp;
     let p2 = this._mp;
@@ -126,7 +84,7 @@ class EditLayer extends _react.Component {
         width: Number(w),
         height: Number(h)
       };
-      return _react2.default.createElement(_MeasureBox2.default, layout);
+      return _react2.default.createElement(_MeasureBox2.default, _extends({}, layout, { lnUnit: _MeasureBox.UNIT_TYPE.CSS }));
     }
     return null;
   }

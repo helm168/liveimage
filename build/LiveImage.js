@@ -121,6 +121,18 @@ class LiveImage extends _react.Component {
     this.onKeydown = this.onKeydown.bind(this);
   }
 
+  getChildContext() {
+    let dPix2cssRatio = 1;
+    // TODO 方向
+    if (this.el) {
+      dPix2cssRatio = this.props.imgWidth / this.el.clientHeight;
+    }
+    return {
+      mm2dPixRatio: this.props.mm2dPixRatio,
+      dPix2cssRatio
+    };
+  }
+
   _flow() {
     if (this.state.paused && !this.state.inEdit) {
       this.setState({
@@ -221,6 +233,7 @@ class LiveImage extends _react.Component {
       inEdit: !this.state.inEdit,
       paused: true
     });
+    this.forceUpdate();
   }
 
   onKeydown(evt) {
@@ -233,6 +246,7 @@ class LiveImage extends _react.Component {
             inEdit: true,
             paused: true
           });
+          this.forceUpdate();
         }
         break;
       // ESC
@@ -240,6 +254,7 @@ class LiveImage extends _react.Component {
         this.setState({
           inEdit: false
         });
+        this.forceUpdate();
         break;
       // s
       case 83:
@@ -247,6 +262,7 @@ class LiveImage extends _react.Component {
           this.setState({
             paused: true
           });
+          this.forceUpdate();
         }
         break;
       // g
@@ -255,6 +271,7 @@ class LiveImage extends _react.Component {
           this.setState({
             paused: false
           });
+          this.forceUpdate();
         }
         break;
       default:
@@ -413,7 +430,8 @@ class LiveImage extends _react.Component {
     this._doFlow();
     return _react2.default.createElement(
       'div',
-      { className: '_liveimg', style: styles.container },
+      { className: '_liveimg', style: styles.container,
+        ref: el => this.el = el },
       this.renderControls(),
       this.renderMask(),
       this.renderEditCanvas(),
@@ -502,7 +520,9 @@ LiveImage.propTypes = {
   onMeasure: _propTypes2.default.func,
   store: _propTypes2.default.object,
   paused: _propTypes2.default.bool,
-  showControls: _propTypes2.default.bool
+  showControls: _propTypes2.default.bool,
+  // 实际尺寸(mm)和物理像素的比值
+  mm2dPixRatio: _propTypes2.default.number
 };
 LiveImage.defaultProps = {
   direction: DIRECTION.RIGHT,
@@ -519,5 +539,10 @@ LiveImage.defaultProps = {
   maxCacheData: 1000,
   webgl: true,
   paused: false,
-  showControls: true
+  showControls: true,
+  mm2dPixRatio: 1
+};
+LiveImage.childContextTypes = {
+  mm2dPixRatio: _propTypes2.default.number,
+  dPix2cssRatio: _propTypes2.default.number
 };
