@@ -161,7 +161,6 @@ class List extends _react.Component {
           missIds.push(dataIdx);
         }
       }
-      console.log('missIds', missIds.join(','), data.start());
     } else {
       this._listItems = items = [];
       for (let i = 0; i < renderItemCount; i++) {

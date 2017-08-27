@@ -159,7 +159,6 @@ export default class List extends Component {
           missIds.push(dataIdx);
         }
       }
-      console.log('missIds', missIds.join(','), data.start());
     } else {
       this._listItems = items = [];
       for(let i = 0; i < renderItemCount; i++) {
