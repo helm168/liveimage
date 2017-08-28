@@ -35,14 +35,13 @@ const styles = {
 };
 
 class Image extends _react.Component {
-
   renderImg() {
     let src = this.props.src;
     if (!src) {
       return null;
     } else if (typeof src === 'string') {
       return _react2.default.createElement(_HTMLImage2.default, this.props);
-    } else if (this.props.webgl) {
+    } else if (this.context.webgl) {
       return _react2.default.createElement(_WebglImage2.default, this.props);
     }
     return _react2.default.createElement(_CanvasImage2.default, this.props);
@@ -62,4 +61,7 @@ Image.propTypes = {
   width: _propTypes2.default.number,
   height: _propTypes2.default.number,
   src: _propTypes2.default.any
+};
+Image.contextTypes = {
+  webgl: _propTypes2.default.bool
 };

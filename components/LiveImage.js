@@ -84,18 +84,6 @@ export default class LiveImage extends Component {
     this.onKeydown = this.onKeydown.bind(this);
   }
 
-  getChildContext() {
-    let dPix2cssRatio = 1;
-    // TODO 方向
-    if (this.el) {
-      dPix2cssRatio = this.props.imgWidth / this.el.clientHeight;
-    }
-    return {
-      mm2dPixRatio: this.props.mm2dPixRatio,
-      dPix2cssRatio,
-    };
-  }
-
   static propTypes = {
     direction: PropTypes.string,
     velocity: PropTypes.number,
@@ -116,6 +104,7 @@ export default class LiveImage extends Component {
     showControls: PropTypes.bool,
     // 实际尺寸(mm)和物理像素的比值
     mm2dPixRatio: PropTypes.number,
+    padding2Smooth: PropTypes.bool,
   }
 
   static defaultProps = {
@@ -135,11 +124,26 @@ export default class LiveImage extends Component {
     paused: false,
     showControls: true,
     mm2dPixRatio: 1,
+    padding2Smooth: true,
   }
 
   static childContextTypes = {
     mm2dPixRatio: PropTypes.number,
     dPix2cssRatio: PropTypes.number,
+    webgl: PropTypes.bool,
+  }
+
+  getChildContext() {
+    let dPix2cssRatio = 1;
+    // TODO 方向
+    if (this.el) {
+      dPix2cssRatio = this.props.imgWidth / this.el.clientHeight;
+    }
+    return {
+      mm2dPixRatio: this.props.mm2dPixRatio,
+      dPix2cssRatio,
+      webgl: this.props.webgl,
+    };
   }
 
   _flow() {
@@ -203,6 +207,12 @@ export default class LiveImage extends Component {
   scrollTo(position) {
     if (this._scroller) {
       this._moveTo(position);
+    }
+  }
+
+  scrollToMiddle() {
+    if (this._scroller) {
+      this._scroller.scrollToMiddle();
     }
   }
 
@@ -414,6 +424,7 @@ export default class LiveImage extends Component {
           onBlock={this.onBlock.bind(this)}
           onDrain={this.onDrain.bind(this)}
           blockscope={blockscope}
+          padding2Smooth={this.props.padding2Smooth}
           ref={(scroller) => {this._scroller = scroller;}}
         />
       </div>

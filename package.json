@@ -1,6 +1,6 @@
 {
   "name": "liveimage",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "An react component for live image",
   "main": "build/index.js",
   "scripts": {

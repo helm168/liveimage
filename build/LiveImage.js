@@ -129,7 +129,8 @@ class LiveImage extends _react.Component {
     }
     return {
       mm2dPixRatio: this.props.mm2dPixRatio,
-      dPix2cssRatio
+      dPix2cssRatio,
+      webgl: this.props.webgl
     };
   }
 
@@ -194,6 +195,12 @@ class LiveImage extends _react.Component {
   scrollTo(position) {
     if (this._scroller) {
       this._moveTo(position);
+    }
+  }
+
+  scrollToMiddle() {
+    if (this._scroller) {
+      this._scroller.scrollToMiddle();
     }
   }
 
@@ -419,6 +426,7 @@ class LiveImage extends _react.Component {
         onBlock: this.onBlock.bind(this),
         onDrain: this.onDrain.bind(this),
         blockscope: blockscope,
+        padding2Smooth: this.props.padding2Smooth,
         ref: scroller => {
           this._scroller = scroller;
         }
@@ -522,7 +530,8 @@ LiveImage.propTypes = {
   paused: _propTypes2.default.bool,
   showControls: _propTypes2.default.bool,
   // 实际尺寸(mm)和物理像素的比值
-  mm2dPixRatio: _propTypes2.default.number
+  mm2dPixRatio: _propTypes2.default.number,
+  padding2Smooth: _propTypes2.default.bool
 };
 LiveImage.defaultProps = {
   direction: DIRECTION.RIGHT,
@@ -540,9 +549,11 @@ LiveImage.defaultProps = {
   webgl: true,
   paused: false,
   showControls: true,
-  mm2dPixRatio: 1
+  mm2dPixRatio: 1,
+  padding2Smooth: true
 };
 LiveImage.childContextTypes = {
   mm2dPixRatio: _propTypes2.default.number,
-  dPix2cssRatio: _propTypes2.default.number
+  dPix2cssRatio: _propTypes2.default.number,
+  webgl: _propTypes2.default.bool
 };

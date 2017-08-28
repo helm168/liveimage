@@ -36,17 +36,8 @@ class List extends _react.Component {
     this._listItems = [];
     this._visualItemCount = 0;
     this._initPosition = { x: 0, y: 0 };
-
-    // 多加点padding, 隐藏启动时的抖动
-    this._initPadding = {
-      x: window.innerWidth + 100,
-      y: window.innerHeight + 100
-    };
+    this.setPadding(0, 0);
     this._itemHeight = 0;
-    this._paddingStyle = {
-      width: this._initPadding.x,
-      height: this._initPadding.y
-    };
     this.state = {
       measureBoxs: []
     };
@@ -54,6 +45,18 @@ class List extends _react.Component {
 
   getDataSize(data) {
     return data && data.size();
+  }
+
+  setPadding(x, y) {
+    this._initPadding = {
+      x,
+      y
+    };
+
+    this._paddingStyle = {
+      width: x,
+      height: y
+    };
   }
 
   renderMeasureBoxs() {
@@ -179,7 +182,10 @@ class List extends _react.Component {
 
     return _react2.default.createElement(
       'div',
-      { className: '_list', style: contentStyle },
+      { className: '_list', style: contentStyle,
+        ref: el => {
+          this.el = el;
+        } },
       _react2.default.createElement('div', { style: holderStyle }),
       this.renderItemHeightDetectorEl(),
       this.renderMeasureBoxs(),
@@ -237,6 +243,11 @@ class List extends _react.Component {
       this._calcVisualItemCount(this.props.height, this._itemHeight);
       resize();
     };
+    if (this.props.padding2Smooth) {
+      // 加点padding, 隐藏启动时的抖动
+      let containerSize = this.getContainerSize();
+      this.setPadding(containerSize.x + 100, containerSize.y + 100);
+    }
     // 第一次render时可能需要识别itemHeight, 这里立即第二次render可以保证宽度正常
     // 主要解决组件初始化后立即调用scrollTo方法
     requestAnimationFrame(() => {
@@ -314,9 +325,17 @@ class List extends _react.Component {
 
   _calcVisualItemCount(height, itemHeight) {
     if (!height) {
-      height = Math.max(window.innerWidth, window.innerHeight);
+      if (this.el) {
+        height = Math.max(this.el.clientWidth || this.el.clientHeight);
+      } else {
+        height = Math.max(window.innerWidth, window.innerHeight);
+      }
     }
     this._visualItemCount = Math.max(this._visualItemCount, Math.ceil(height / itemHeight) + 1);
+    // FIXME ugly
+    if (this.props.data) {
+      this.props.data.__inScreenDataNum = this._visualItemCount;
+    }
   }
 
   getPosition() {
@@ -355,6 +374,12 @@ class List extends _react.Component {
     } else {
       this._initPosition = { x: x, y: y };
     }
+  }
+
+  scrollToMiddle() {
+    let minPosition = this.getMinPosition();
+    let scrollX = minPosition.x / 2;
+    this.scrollTo(scrollX, 0);
   }
 }
 

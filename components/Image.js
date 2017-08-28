@@ -18,14 +18,16 @@ export default class Image extends Component {
     height: PropTypes.number,
     src: PropTypes.any,
   };
-
+  static contextTypes = {
+    webgl: PropTypes.bool,
+  };
   renderImg() {
     let src = this.props.src;
     if (!src) {
       return null;
     } else if (typeof src === 'string') {
       return <HTMLImage {...this.props} />
-    } else if (this.props.webgl) {
+    } else if (this.context.webgl) {
       return <WebglImage {...this.props} />
     }
     return <CanvasImage {...this.props} />
