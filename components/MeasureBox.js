@@ -76,14 +76,35 @@ export default class MeasureBox extends Component {
     } = renderProps
     let style = {
       position: 'absolute',
+      display: 'flex',
+      flexDirection: 'column',
       left: cssWidth + 5,
-      top: -20,
+      top: 0,
+      margin: 0,
       color: '#fff',
-      background: '#68af02',
-      padding: '3px 5px',
+      background: 'rgb(34, 34, 34)',
+      color: 'rgb(223, 223, 223)',
+      padding: '10px 5px',
+      fontSize: 12,
     };
-    let text = `w:${mmWidth} h:${mmHeight}`;
-    return <p style={style}>{text}</p>
+    let lineStyle = {
+      whiteSpace: 'nowrap',
+      lineHeight: 1.5,
+    };
+    mmWidth = Number(mmWidth);
+    mmHeight = Number(mmHeight);
+    let mmLength = Math.sqrt(mmWidth * mmWidth + mmHeight * mmHeight).toFixed(1);
+    let angle = (Math.atan(mmHeight / mmWidth) / Math.PI * 180).toFixed(0);
+    mmWidth = mmWidth.toFixed(1);
+    mmHeight = mmHeight.toFixed(1);
+    return (
+      <p style={style}>
+        <span style={lineStyle}>水平距离:{mmWidth}mm</span>
+        <span style={lineStyle}>垂直距离:{mmHeight}mm</span>
+        <span style={lineStyle}>长度:{mmLength}mm</span>
+        <span style={lineStyle}>角度:{angle}</span>
+      </p>
+    );
   }
   render() {
     let renderProps = this.getRenderProps();

@@ -78,17 +78,57 @@ class MeasureBox extends _react.Component {
     } = renderProps;
     let style = {
       position: 'absolute',
+      display: 'flex',
+      flexDirection: 'column',
       left: cssWidth + 5,
-      top: -20,
+      top: 0,
+      margin: 0,
       color: '#fff',
-      background: '#68af02',
-      padding: '3px 5px'
+      background: 'rgb(34, 34, 34)',
+      color: 'rgb(223, 223, 223)',
+      padding: '10px 5px',
+      fontSize: 12
     };
-    let text = `w:${mmWidth} h:${mmHeight}`;
+    let lineStyle = {
+      whiteSpace: 'nowrap',
+      lineHeight: 1.5
+    };
+    mmWidth = Number(mmWidth);
+    mmHeight = Number(mmHeight);
+    let mmLength = Math.sqrt(mmWidth * mmWidth + mmHeight * mmHeight).toFixed(1);
+    let angle = (Math.atan(mmHeight / mmWidth) / Math.PI * 180).toFixed(0);
+    mmWidth = mmWidth.toFixed(1);
+    mmHeight = mmHeight.toFixed(1);
     return _react2.default.createElement(
       'p',
       { style: style },
-      text
+      _react2.default.createElement(
+        'span',
+        { style: lineStyle },
+        '\u6C34\u5E73\u8DDD\u79BB:',
+        mmWidth,
+        'mm'
+      ),
+      _react2.default.createElement(
+        'span',
+        { style: lineStyle },
+        '\u5782\u76F4\u8DDD\u79BB:',
+        mmHeight,
+        'mm'
+      ),
+      _react2.default.createElement(
+        'span',
+        { style: lineStyle },
+        '\u957F\u5EA6:',
+        mmLength,
+        'mm'
+      ),
+      _react2.default.createElement(
+        'span',
+        { style: lineStyle },
+        '\u89D2\u5EA6:',
+        angle
+      )
     );
   }
   render() {
