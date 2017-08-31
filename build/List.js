@@ -251,10 +251,12 @@ class List extends _react.Component {
     // 第一次render时可能需要识别itemHeight, 这里立即第二次render可以保证宽度正常
     // 主要解决组件初始化后立即调用scrollTo方法
     requestAnimationFrame(() => {
-      this.forceUpdate();
-      this._scroller._refreshPosition();
-      this._didMount = true;
-      this.scrollTo(this._initPosition.x, this._initPosition.y);
+      if (this._scroller) {
+        this.forceUpdate();
+        this._scroller._refreshPosition();
+        this._didMount = true;
+        this.scrollTo(this._initPosition.x, this._initPosition.y);
+      }
     });
   }
 

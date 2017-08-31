@@ -22,18 +22,27 @@ export default class EditLayer extends Component {
   };
 
   onTouchStart(evt) {
+    this._sp = this._mp = null;
+    this._start = true;
     this._sp = this._getPosition(evt);
+    this.forceUpdate();
   }
   onTouchMove(evt) {
-    this._mp = this._getPosition(evt);
-    this.forceUpdate();
+    if (this._start) {
+      let mp = this._getPosition(evt);
+      let w = Math.abs(mp.x - this._sp.x);
+      let h = Math.abs(mp.y - this._sp.y);
+      if (w > 10 || h > 10) {
+        this._mp = mp;
+        this.forceUpdate();
+      }
+    }
   }
   onTouchEnd(evt) {
     if (this.props.onMeasure && this._measureBox) {
       this.props.onMeasure(this._measureBox);
     }
-    this._sp = this._mp = null;
-    this.forceUpdate();
+    this._start = false;;
   }
   _getPosition(evt) {
     let position = {
