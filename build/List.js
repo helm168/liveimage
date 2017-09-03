@@ -61,22 +61,23 @@ class List extends _react.Component {
 
   renderMeasureBoxs() {
     let measureBoxs = this.state.measureBoxs;
-    let position = this.getPosition();
-    let containerSize = this.getContainerSize();
-    // TODO: 考虑方向
+    let mappedMeasureBoxs = [];
+    let axis = this.props.direction === 'v' ? 'y' : 'x';
     measureBoxs.forEach(box => {
-      if (!box.positionMapped) {
-        box.positionMapped = true;
-        // 仅考虑向右移动的case， 以right为参考
-        box.right = containerSize.x - position.x - box.width - box.left;
+      if (box.positionMapped) {
+        mappedMeasureBoxs.push(box);
+      } else {
+        box.top = box.top / this.context.dPix2cssRatio;
+        box.right = box.lineIndex / this.context.dPix2cssRatio + this._initPadding[axis];
         delete box.left;
-        box.top = box.top - position.y;
+        box.positionMapped = true;
+        mappedMeasureBoxs.push(box);
       }
     });
     return _react2.default.createElement(
       'div',
       { style: styles.measureBoxContainer, className: '_measureBoxs' },
-      measureBoxs.map(box => _react2.default.createElement(_MeasureBox2.default, _extends({ key: box.id }, box)))
+      mappedMeasureBoxs.map(box => _react2.default.createElement(_MeasureBox2.default, _extends({ key: box.id }, box)))
     );
   }
 
@@ -149,7 +150,6 @@ class List extends _react.Component {
       }
     } else if (this._sDirection === S_DIRECTION.DOWN) {
       this._paddingStyle[heightName] += itemCount * itemHeight;
-      let missIds = [];
       for (let i = 0; i < itemCount; i++) {
         // 当items的数量超过最大数量时才删除
         if (items.length >= itemLength) {
@@ -160,8 +160,6 @@ class List extends _react.Component {
 
         if (itemData) {
           items.push(this.renderListItem(dataIdx, itemData, itemStyle));
-        } else {
-          missIds.push(dataIdx);
         }
       }
     } else {
@@ -393,6 +391,9 @@ List.propTypes = {
   itemClazz: _react.PropTypes.func.isRequired,
   direction: _react.PropTypes.string,
   rtl: _react.PropTypes.bool
+};
+List.contextTypes = {
+  dPix2cssRatio: _react.PropTypes.number
 };
 List.defaultProps = {
   direction: 'v',

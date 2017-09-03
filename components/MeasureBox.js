@@ -38,13 +38,13 @@ export default class MeasureBox extends Component {
       return {
         cssWidth: width,
         cssHeight: height,
-        mmWidth: (width * mm2cssRatio).toFixed(0),
-        mmHeight: (height * mm2cssRatio).toFixed(0),
+        mmWidth: Number((width * mm2cssRatio).toFixed(0)),
+        mmHeight: Number((height * mm2cssRatio).toFixed(0)),
       };
     }
     return {
-      cssWidth: (width / mm2cssRatio).toFixed(0),
-      cssHeight: (height / mm2cssRatio).toFixed(0),
+      cssWidth: Number((width / mm2cssRatio).toFixed(0)),
+      cssHeight: Number((height / mm2cssRatio).toFixed(0)),
       mmWidth: width,
       mmHeight: height,
     }
@@ -90,6 +90,7 @@ export default class MeasureBox extends Component {
     let lineStyle = {
       whiteSpace: 'nowrap',
       lineHeight: 1.5,
+      textAlign: 'left',
     };
     mmWidth = Number(mmWidth);
     mmHeight = Number(mmHeight);
