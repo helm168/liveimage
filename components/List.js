@@ -19,6 +19,10 @@ export default class List extends Component {
     rtl: PropTypes.bool,
   };
 
+  static contextTypes = {
+    dPix2cssRatio: PropTypes.number,
+  };
+
   static defaultProps = {
     direction: 'v',
     onBlock: noop,
@@ -57,21 +61,22 @@ export default class List extends Component {
 
   renderMeasureBoxs() {
     let measureBoxs = this.state.measureBoxs;
-    let position = this.getPosition();
-    let containerSize = this.getContainerSize();
-    // TODO: 考虑方向
+    let mappedMeasureBoxs = [];
+    let axis = this.props.direction === 'v' ? 'y' : 'x';
     measureBoxs.forEach(box => {
-      if (!box.positionMapped) {
-        box.positionMapped = true;
-        // 仅考虑向右移动的case， 以right为参考
-        box.right = containerSize.x - position.x - box.width - box.left;
+      if (box.positionMapped) {
+        mappedMeasureBoxs.push(box);
+      } else {
+        box.top = box.top / this.context.dPix2cssRatio;
+        box.right = box.lineIndex / this.context.dPix2cssRatio + this._initPadding[axis];
         delete box.left;
-        box.top = box.top - position.y;
+        box.positionMapped = true;
+        mappedMeasureBoxs.push(box);
       }
     });
     return (
       <div style={styles.measureBoxContainer} className="_measureBoxs">
-        {measureBoxs.map(box => <MeasureBox key={box.id} {...box} />)}
+        {mappedMeasureBoxs.map(box => <MeasureBox key={box.id} {...box} />)}
       </div>
     );
   }
@@ -147,7 +152,6 @@ export default class List extends Component {
       }
     } else if (this._sDirection === S_DIRECTION.DOWN) {
       this._paddingStyle[heightName] += itemCount * itemHeight;
-      let missIds = [];
       for (let i = 0; i < itemCount; i++) {
         // 当items的数量超过最大数量时才删除
         if (items.length >= itemLength) {
@@ -158,8 +162,6 @@ export default class List extends Component {
 
         if (itemData) {
           items.push(this.renderListItem(dataIdx, itemData, itemStyle));
-        } else {
-          missIds.push(dataIdx);
         }
       }
     } else {
