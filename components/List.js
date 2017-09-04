@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import Scroller from 'react-web-scroller';
 import MeasureBox from './MeasureBox';
+import Tick from './Tick';
 
 const S_DIRECTION = {
   UP: 'up',
@@ -21,6 +22,7 @@ export default class List extends Component {
 
   static contextTypes = {
     dPix2cssRatio: PropTypes.number,
+    tickInterval: PropTypes.number,
   };
 
   static defaultProps = {
@@ -38,6 +40,7 @@ export default class List extends Component {
     this._initPosition = {x: 0, y: 0};
     this.setPadding(0, 0);
     this._itemHeight = 0;
+    this._rafIds = [];
     this.state = {
       measureBoxs: [],
     };
@@ -45,6 +48,10 @@ export default class List extends Component {
 
   getDataSize(data) {
     return data && data.size();
+  }
+
+  getAxis() {
+    return this.props.direction === 'v' ? 'y' : 'x';
   }
 
   setPadding(x, y) {
@@ -62,7 +69,7 @@ export default class List extends Component {
   renderMeasureBoxs() {
     let measureBoxs = this.state.measureBoxs;
     let mappedMeasureBoxs = [];
-    let axis = this.props.direction === 'v' ? 'y' : 'x';
+    let axis = this.getAxis();
     measureBoxs.forEach(box => {
       if (box.positionMapped) {
         mappedMeasureBoxs.push(box);
@@ -81,30 +88,45 @@ export default class List extends Component {
     );
   }
 
+  renderTicks() {
+    if (this.context.tickInterval) {
+      if (!this._ticks) this._ticks = [];
+      let lastTick = this._ticks[this._ticks.length - 1];
+      let nextTickValue;
+      if (lastTick) {
+        nextTickValue = lastTick.value + this.context.tickInterval;
+      } else {
+        nextTickValue = 0;
+      }
+      let axis = this.getAxis();
+      let nextTick = {
+        id: nextTickValue,
+        right: nextTickValue / this.context.dPix2cssRatio + this._initPadding[axis],
+        value: nextTickValue,
+      };
+      let minPosition = Math.abs(this.getMinPosition()[axis]);
+      if (nextTick.right < minPosition) {
+        this._ticks.push(nextTick);
+      }
+      return (
+        <div style={styles.tickContainer} className="_tickBox">
+          {this._ticks.map(tick => <Tick key={tick.id} {...tick} />)}
+        </div>
+      );
+    } else {
+      return null;
+    }
+  }
+
   // list无限滚动需要知道list item的高度
   // 1. itemHeight可以由外部传入
   // 2. 当外部没有传入itemHeight时需要传入高宽比(itemHwRatio), 用于自动计算itemHeight
   renderItemHeightDetectorEl() {
-    let itemHeightDetectorStyle = styles.itemHeightDetector;
-    let {
-      itemHeight,
-      itemHwRatio,
-      direction,
-    } = this.props;
-    if (!this.props.itemHeight) {
-      if (direction === 'v') {
-        itemHeightDetectorStyle.width = '100vw';
-        itemHeightDetectorStyle.height = `${100 * itemHwRatio}vw`;
-      } else {
-        itemHeightDetectorStyle.height = '100vh';
-        itemHeightDetectorStyle.width = `${100 * itemHwRatio}vh`;
-      }
-    }
-    if (itemHeight) {
+    if (this.props.itemHeight) {
       return null;
     }
     return (
-      <div style={itemHeightDetectorStyle}
+      <div style={styles.itemHeightDetector}
         ref={(el) => this._itemHeightDetectorEl = el}
       ></div>
     );
@@ -131,7 +153,7 @@ export default class List extends Component {
     let topItemIdx = this._topItemDataIdx;
     let itemLength = this._listItems.length;
     let heightName = direction === 'v' ? 'height' : 'width';
-    let axis = direction === 'v' ? 'y' : 'x';
+    let axis = this.getAxis();
     let itemStyle = {};
     if (itemHeight) {
       itemStyle[heightName] = itemHeight;
@@ -186,6 +208,7 @@ export default class List extends Component {
         <div style={holderStyle}></div>
         {this.renderItemHeightDetectorEl()}
         {this.renderMeasureBoxs()}
+        {this.renderTicks()}
         {items}
       </div>
     );
@@ -222,13 +245,18 @@ export default class List extends Component {
     if (size !== this._dataLn) {
       this._dataLn = size;
       this._scroller._refreshPosition();
-      this._positionMap.setCount(size);
+      this._positionMap && this._positionMap.setCount(size);
     }
   }
 
   componentDidMount() {
-    let widthProp = this.props.direction === 'v' ? 'clientHeight' : 'clientWidth';
-    this._itemHeight = Math.floor(this.props.itemHeight || this._itemHeightDetectorEl[widthProp]);
+    if (this.props.padding2Smooth) {
+      // 加点padding, 隐藏启动时的抖动
+      let containerSize = this.getContainerSize();
+      this.setPadding(containerSize.x + 100, containerSize.y + 100);
+    }
+
+    this._calcItemHeight();
     this._initPositionMap(this._itemHeight, this.props.data.size());
     this._calcVisualItemCount(this.props.height, this._itemHeight);
     this._scroller.on('scroll', this.onScroll.bind(this));
@@ -237,25 +265,25 @@ export default class List extends Component {
       this._calcVisualItemCount(this.props.height, this._itemHeight);
       resize();
     }
-    if (this.props.padding2Smooth) {
-      // 加点padding, 隐藏启动时的抖动
-      let containerSize = this.getContainerSize();
-      this.setPadding(containerSize.x + 100, containerSize.y + 100);
-    }
     // 第一次render时可能需要识别itemHeight, 这里立即第二次render可以保证宽度正常
     // 主要解决组件初始化后立即调用scrollTo方法
-    requestAnimationFrame(() => {
+    this._rafIds.push(requestAnimationFrame(() => {
       if (this._scroller) {
         this.forceUpdate();
         this._scroller._refreshPosition();
         this._didMount = true;
         this.scrollTo(this._initPosition.x, this._initPosition.y);
       }
-    });
+    }));
+
   }
 
   componentDidUpdate() {
     this.onConsumeProcess();
+  }
+
+  componentWillUnmount() {
+    this._rafIds.forEach(rafId => cancelAnimationFrame(rafId));
   }
 
   /*
@@ -276,7 +304,7 @@ export default class List extends Component {
   }
 
   onScroll(scroller, position) {
-    let axis = this.props.direction === 'v' ? 'y' : 'x';
+    let axis = this.getAxis();
     let dis = this.props.rtl ? -position[axis] : position[axis];
     dis = dis - this._initPadding[axis];
     let itemIdx = this._positionMap.findIndex(dis);
@@ -317,6 +345,30 @@ export default class List extends Component {
       height: height,
       count: size,
     });
+  }
+
+  _calcItemHeight() {
+    let {
+      itemHwRatio,
+      itemHeight,
+      direction,
+    } = this.props;
+    if (itemHeight) {
+      this._itemHeight = itemHeight;
+    } else {
+      let el2viewportRatio = this.el.clientHeight / window.innerHeight;
+      let base = el2viewportRatio * 100;
+      if (direction === 'v') {
+        this._itemHeightDetectorEl.style.height = `${base * itemHwRatio}vw`;
+        this._itemHeightDetectorEl.style.width = `${base}vw`;
+      } else {
+        this._itemHeightDetectorEl.style.height = `${base}vh`;
+        this._itemHeightDetectorEl.style.width = `${base * itemHwRatio}vh`;
+      }
+
+      let widthProp = this.props.direction === 'v' ? 'clientHeight' : 'clientWidth';
+      this._itemHeight = Math.floor(this._itemHeightDetectorEl[widthProp]);
+    }
   }
 
   _calcVisualItemCount(height, itemHeight) {
@@ -437,6 +489,14 @@ let styles = {
     top: 0,
   },
   measureBoxContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    zIndex: 10,
+  },
+  tickContainer: {
     position: 'absolute',
     top: 0,
     bottom: 0,

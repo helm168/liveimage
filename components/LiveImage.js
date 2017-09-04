@@ -105,6 +105,8 @@ export default class LiveImage extends Component {
     // 实际尺寸(mm)和物理像素的比值
     mm2dPixRatio: PropTypes.number,
     padding2Smooth: PropTypes.bool,
+    // 刻度间隔，用来debug用
+    tickInterval: PropTypes.number,
   }
 
   static defaultProps = {
@@ -131,6 +133,7 @@ export default class LiveImage extends Component {
     mm2dPixRatio: PropTypes.number,
     dPix2cssRatio: PropTypes.number,
     webgl: PropTypes.bool,
+    tickInterval: PropTypes.number,
   }
 
   getChildContext() {
@@ -143,6 +146,7 @@ export default class LiveImage extends Component {
       mm2dPixRatio: this.props.mm2dPixRatio,
       dPix2cssRatio,
       webgl: this.props.webgl,
+      tickInterval: this.props.tickInterval,
     };
   }
 
