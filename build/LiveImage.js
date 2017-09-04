@@ -130,7 +130,8 @@ class LiveImage extends _react.Component {
     return {
       mm2dPixRatio: this.props.mm2dPixRatio,
       dPix2cssRatio,
-      webgl: this.props.webgl
+      webgl: this.props.webgl,
+      tickInterval: this.props.tickInterval
     };
   }
 
@@ -531,7 +532,9 @@ LiveImage.propTypes = {
   showControls: _propTypes2.default.bool,
   // 实际尺寸(mm)和物理像素的比值
   mm2dPixRatio: _propTypes2.default.number,
-  padding2Smooth: _propTypes2.default.bool
+  padding2Smooth: _propTypes2.default.bool,
+  // 刻度间隔，用来debug用
+  tickInterval: _propTypes2.default.number
 };
 LiveImage.defaultProps = {
   direction: DIRECTION.RIGHT,
@@ -555,5 +558,6 @@ LiveImage.defaultProps = {
 LiveImage.childContextTypes = {
   mm2dPixRatio: _propTypes2.default.number,
   dPix2cssRatio: _propTypes2.default.number,
-  webgl: _propTypes2.default.bool
+  webgl: _propTypes2.default.bool,
+  tickInterval: _propTypes2.default.number
 };
