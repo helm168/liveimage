@@ -236,23 +236,8 @@ class List extends _react.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    let size = this.getDataSize(nextProps.data);
-    let nextMeasureBoxs = nextProps.data.getMeasureBoxs() || [];
-    let mergeMeasureBox = [];
-    nextMeasureBoxs.forEach(box => {
-      let find = this.state.measureBoxs.find(thisBox => thisBox.id === box.id);
-      if (!find) {
-        mergeMeasureBox.push(box);
-      } else {
-        mergeMeasureBox.push(find);
-      }
-    });
-    this.state.measureBoxs = mergeMeasureBox;
-    if (size !== this._dataLn) {
-      this._dataLn = size;
-      this._scroller._refreshPosition();
-      this._positionMap && this._positionMap.setCount(size);
-    }
+    this._mapPropsMeasureboxToState(nextProps);
+    this._updatePositionMap(nextProps);
   }
 
   componentDidMount() {
@@ -388,6 +373,30 @@ class List extends _react.Component {
     // FIXME ugly
     if (this.props.data) {
       this.props.data.__inScreenDataNum = this._visualItemCount;
+    }
+  }
+
+  _mapPropsMeasureboxToState(nextProps) {
+    let size = this.getDataSize(nextProps.data);
+    let nextMeasureBoxs = nextProps.data.getMeasureBoxs() || [];
+    let mergeMeasureBox = [];
+    nextMeasureBoxs.forEach(box => {
+      let find = this.state.measureBoxs.find(thisBox => thisBox.id === box.id);
+      if (!find) {
+        mergeMeasureBox.push(box);
+      } else {
+        mergeMeasureBox.push(find);
+      }
+    });
+    this.state.measureBoxs = mergeMeasureBox;
+  }
+
+  _updatePositionMap(nextProps) {
+    let size = this.getDataSize(nextProps.data);
+    if (size !== this._dataLn) {
+      this._dataLn = size;
+      this._scroller && this._scroller._refreshPosition();
+      this._positionMap && this._positionMap.setCount(size);
     }
   }
 
