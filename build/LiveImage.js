@@ -160,6 +160,7 @@ class LiveImage extends _react.Component {
         this._inFlow = true;
         let position = this._positionAdd(this._velocity);
         this._moveTo(position);
+        this.props.onanimation(this, this.props.bufLength);
         this._inFlow = false;
         this._doFlow();
       });
@@ -536,7 +537,9 @@ LiveImage.propTypes = {
   padding2Smooth: _propTypes2.default.bool,
   // 刻度间隔，用来debug用
   tickInterval: _propTypes2.default.number,
-  showMeasures: _propTypes2.default.bool
+  showMeasures: _propTypes2.default.bool,
+  onanimation: _propTypes2.default.func,
+  bufLength: _propTypes2.default.number
 };
 LiveImage.defaultProps = {
   direction: DIRECTION.RIGHT,
@@ -556,7 +559,9 @@ LiveImage.defaultProps = {
   showControls: true,
   mm2dPixRatio: 1,
   padding2Smooth: true,
-  showMeasures: false
+  showMeasures: false,
+  onanimation: (liveimage, ln) => {},
+  bufLength: 5
 };
 LiveImage.childContextTypes = {
   mm2dPixRatio: _propTypes2.default.number,

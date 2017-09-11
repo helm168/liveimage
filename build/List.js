@@ -479,7 +479,22 @@ class PositionMap {
     }
   }
   findIndex(y) {
-    return this.binarySearch(this._map, y);
+    // return this.binarySearch(this._map, y);
+    return this.fixSearch(this._map, y);
+  }
+  fixSearch(arr, value) {
+    let idx = 0;
+    let ln = arr.length;
+    if (value < 0) return 0;
+    idx = Math.floor(value / this._height);
+    if (ln > 1) {
+      idx = Math.min(ln - 1, idx + 1);
+    } else {
+      idx = idx + 1;
+    }
+    process.stdout.write("value: " + value + " arrLen: " + ln + " ");
+    process.stdout.write("itemHeight: " + this._height + " idx: " + idx + "\n");
+    return idx;
   }
   binarySearch(arr, value) {
     let ln = arr.length;
