@@ -108,6 +108,8 @@ export default class LiveImage extends Component {
     // 刻度间隔，用来debug用
     tickInterval: PropTypes.number,
     showMeasures: PropTypes.bool,
+    onanimation: PropTypes.func,
+    bufLength: PropTypes.number
   }
 
   static defaultProps = {
@@ -129,6 +131,8 @@ export default class LiveImage extends Component {
     mm2dPixRatio: 1,
     padding2Smooth: true,
     showMeasures: false,
+    onanimation: (liveimage, ln)=> {},
+    bufLength: 5
   }
 
   static childContextTypes = {
@@ -178,6 +182,7 @@ export default class LiveImage extends Component {
         this._inFlow = true;
         let position = this._positionAdd(this._velocity);
         this._moveTo(position);
+        this.props.onanimation(this, this.props.bufLength);
         this._inFlow = false;
         this._doFlow();
       });
