@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import Scroller from 'react-web-scroller';
-import MeasureBox from './MeasureBox';
+import MeasureBox, { MODE } from './MeasureBox';
 import Tick from './Tick';
 
 const S_DIRECTION = {
@@ -87,7 +87,7 @@ export default class List extends Component {
     });
     return (
       <div style={styles.measureBoxContainer} className="_measureBoxs">
-        {mappedMeasureBoxs.map(box => <MeasureBox key={box.id} {...box} />)}
+        {mappedMeasureBoxs.map(box => <MeasureBox key={box.id} {...box} mode={MODE.TOGGLE_MEASURE}/>)}
       </div>
     );
   }
@@ -126,7 +126,7 @@ export default class List extends Component {
   // 1. itemHeight可以由外部传入
   // 2. 当外部没有传入itemHeight时需要传入高宽比(itemHwRatio), 用于自动计算itemHeight
   renderItemHeightDetectorEl() {
-    if (this.props.itemHeight) {
+    if (this._itemHeight) {
       return null;
     }
     return (
@@ -362,13 +362,9 @@ export default class List extends Component {
 
   _calcVisualItemCount(height, itemHeight) {
     if (!height) {
-      if (this.el) {
-        height = Math.max(this.el.clientWidth || this.el.clientHeight);
-      } else {
-        height = Math.max(window.innerWidth, window.innerHeight);
-      }
+      height = Math.max(window.innerWidth, window.innerHeight);
     }
-    this._visualItemCount =  Math.max(this._visualItemCount, Math.ceil(height / itemHeight) + 1);
+    this._visualItemCount =  Math.max(this._visualItemCount, Math.ceil(height / itemHeight) + 2);
     // FIXME ugly
     if (this.props.data) {
       this.props.data.__inScreenDataNum = this._visualItemCount;

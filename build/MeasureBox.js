@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.UNIT_TYPE = undefined;
+exports.MODE = exports.BOX_TYPE = exports.UNIT_TYPE = undefined;
 
 var _react = require('react');
 
@@ -24,7 +24,30 @@ const UNIT_TYPE = exports.UNIT_TYPE = {
   CSS: 'CSS'
 };
 
+const BOX_TYPE = exports.BOX_TYPE = {
+  NORMAL: 'NORMAL',
+  OK: 'OK',
+  NG: 'NG'
+};
+
+const MODE = exports.MODE = {
+  NORMAL: 'NORMAL',
+  TOGGLE_MEASURE: 'OK'
+};
+
 class MeasureBox extends _react.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showMeasure: false
+    };
+  }
+
+  onRectClick() {
+    this.setState({
+      showMeasure: !this.state.showMeasure
+    });
+  }
   getRenderProps() {
     let {
       width,
@@ -58,15 +81,27 @@ class MeasureBox extends _react.Component {
       height: renderProps.cssHeight
     });
   }
+  getRectBorder() {
+    let type = this.props.type;
+    if (type === BOX_TYPE.OK) {
+      return '2px dashed #000';
+    } else if (type === BOX_TYPE.NG) {
+      return '2px dashed #f00';
+    }
+    return '1px dashed #fff';
+  }
   renderRect(renderProps) {
     let style = {
       width: renderProps.cssWidth,
       height: renderProps.cssHeight,
-      border: '1px dashed #fff'
+      border: this.getRectBorder()
     };
-    return _react2.default.createElement('div', { style: style });
+    return _react2.default.createElement('div', { style: style, onClick: this.onRectClick.bind(this) });
   }
   renderMeasure(renderProps) {
+    if (this.props.mode === MODE.TOGGLE_MEASURE && !this.state.showMeasure) {
+      return null;
+    }
     let {
       top,
       left
@@ -155,7 +190,8 @@ MeasureBox.propTypes = {
   lnUnit: _propTypes2.default.string
 };
 MeasureBox.defaultProps = {
-  lnUnit: UNIT_TYPE.MM
+  lnUnit: UNIT_TYPE.MM,
+  mode: MODE.NORMAL
 };
 MeasureBox.contextTypes = {
   mm2dPixRatio: _propTypes2.default.number,
