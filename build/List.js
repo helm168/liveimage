@@ -69,6 +69,9 @@ class List extends _react.Component {
   }
 
   renderMeasureBoxs() {
+    if (!this.context.showMeasures) {
+      return null;
+    }
     let measureBoxs = this.state.measureBoxs;
     let mappedMeasureBoxs = [];
     let axis = this.getAxis();
@@ -456,7 +459,8 @@ List.propTypes = {
 };
 List.contextTypes = {
   dPix2cssRatio: _react.PropTypes.number,
-  tickInterval: _react.PropTypes.number
+  tickInterval: _react.PropTypes.number,
+  showMeasures: _react.PropTypes.bool
 };
 List.defaultProps = {
   direction: 'v',
