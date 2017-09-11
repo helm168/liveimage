@@ -23,6 +23,7 @@ export default class List extends Component {
   static contextTypes = {
     dPix2cssRatio: PropTypes.number,
     tickInterval: PropTypes.number,
+    showMeasures: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -67,6 +68,9 @@ export default class List extends Component {
   }
 
   renderMeasureBoxs() {
+    if (!this.context.showMeasures) {
+      return null;
+    }
     let measureBoxs = this.state.measureBoxs;
     let mappedMeasureBoxs = [];
     let axis = this.getAxis();

@@ -107,6 +107,7 @@ export default class LiveImage extends Component {
     padding2Smooth: PropTypes.bool,
     // 刻度间隔，用来debug用
     tickInterval: PropTypes.number,
+    showMeasures: PropTypes.bool,
   }
 
   static defaultProps = {
@@ -127,6 +128,7 @@ export default class LiveImage extends Component {
     showControls: true,
     mm2dPixRatio: 1,
     padding2Smooth: true,
+    showMeasures: false,
   }
 
   static childContextTypes = {
@@ -134,6 +136,7 @@ export default class LiveImage extends Component {
     dPix2cssRatio: PropTypes.number,
     webgl: PropTypes.bool,
     tickInterval: PropTypes.number,
+    showMeasures: PropTypes.bool,
   }
 
   getChildContext() {
@@ -147,6 +150,7 @@ export default class LiveImage extends Component {
       dPix2cssRatio,
       webgl: this.props.webgl,
       tickInterval: this.props.tickInterval,
+      showMeasures: this.props.showMeasures,
     };
   }
 
