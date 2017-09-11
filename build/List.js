@@ -89,7 +89,7 @@ class List extends _react.Component {
     return _react2.default.createElement(
       'div',
       { style: styles.measureBoxContainer, className: '_measureBoxs' },
-      mappedMeasureBoxs.map(box => _react2.default.createElement(_MeasureBox2.default, _extends({ key: box.id }, box)))
+      mappedMeasureBoxs.map(box => _react2.default.createElement(_MeasureBox2.default, _extends({ key: box.id }, box, { mode: _MeasureBox.MODE.TOGGLE_MEASURE })))
     );
   }
 
@@ -127,7 +127,7 @@ class List extends _react.Component {
   // 1. itemHeight可以由外部传入
   // 2. 当外部没有传入itemHeight时需要传入高宽比(itemHwRatio), 用于自动计算itemHeight
   renderItemHeightDetectorEl() {
-    if (this.props.itemHeight) {
+    if (this._itemHeight) {
       return null;
     }
     return _react2.default.createElement('div', { style: styles.itemHeightDetector,
@@ -366,13 +366,9 @@ class List extends _react.Component {
 
   _calcVisualItemCount(height, itemHeight) {
     if (!height) {
-      if (this.el) {
-        height = Math.max(this.el.clientWidth || this.el.clientHeight);
-      } else {
-        height = Math.max(window.innerWidth, window.innerHeight);
-      }
+      height = Math.max(window.innerWidth, window.innerHeight);
     }
-    this._visualItemCount = Math.max(this._visualItemCount, Math.ceil(height / itemHeight) + 1);
+    this._visualItemCount = Math.max(this._visualItemCount, Math.ceil(height / itemHeight) + 2);
     // FIXME ugly
     if (this.props.data) {
       this.props.data.__inScreenDataNum = this._visualItemCount;

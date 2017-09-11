@@ -71,7 +71,7 @@ class Store {
   }
   addMeasureBox(measureBox) {
     this._measureBoxs = this._measureBoxs || [];
-    // store中的_measureBoxs 先要确保没有重复. 
+    // store中的_measureBoxs 先要确保没有重复.
     if (!this._measureBoxs.find(thisBox => thisBox.id === measureBox.id)) {
       this._measureBoxs.push(measureBox);
     }

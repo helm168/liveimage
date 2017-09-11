@@ -7,7 +7,24 @@ export const UNIT_TYPE = {
   CSS: 'CSS',
 };
 
+export const BOX_TYPE = {
+  NORMAL: 'NORMAL',
+  OK: 'OK',
+  NG: 'NG',
+};
+
+export const MODE = {
+  NORMAL: 'NORMAL',
+  TOGGLE_MEASURE: 'OK',
+};
+
 export default class MeasureBox extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showMeasure: false,
+    };
+  }
   static propTypes = {
     left: PropTypes.number,
     right: PropTypes.number,
@@ -18,11 +35,17 @@ export default class MeasureBox extends Component {
   };
   static defaultProps = {
     lnUnit: UNIT_TYPE.MM,
+    mode: MODE.NORMAL,
   };
   static contextTypes = {
     mm2dPixRatio: PropTypes.number,
     dPix2cssRatio: PropTypes.number,
   };
+  onRectClick() {
+    this.setState({
+      showMeasure: !this.state.showMeasure,
+    });
+  }
   getRenderProps() {
     let {
       width,
@@ -56,15 +79,27 @@ export default class MeasureBox extends Component {
       height: renderProps.cssHeight,
     });
   }
+  getRectBorder() {
+    let type = this.props.type;
+    if (type === BOX_TYPE.OK) {
+      return '2px dashed #000';
+    } else if (type === BOX_TYPE.NG) {
+      return '2px dashed #f00';
+    }
+    return '1px dashed #fff';
+  }
   renderRect(renderProps) {
     let style = {
       width: renderProps.cssWidth,
       height: renderProps.cssHeight,
-      border: '1px dashed #fff',
+      border: this.getRectBorder(),
     }
-    return <div style={style}></div>
+    return <div style={style} onClick={this.onRectClick.bind(this)}></div>
   }
   renderMeasure(renderProps) {
+    if (this.props.mode === MODE.TOGGLE_MEASURE && !this.state.showMeasure) {
+      return null;
+    }
     let {
       top,
       left,

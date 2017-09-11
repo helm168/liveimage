@@ -129,6 +129,34 @@ Type: `boolean`
 
 default: `true`
 
+### showMeasures
+Type: `boolean`  
+
+是否显示测量矩形
+
+default: `false`
+
+### mm2dPixRatio
+Type: `number`  
+
+实际尺寸(mm)和物理像素的比值
+
+default: `1`
+
+### padding2Smooth
+Type: `boolean`  
+
+是否添加一些padding让图片初始化滚动更流畅一些
+
+default: `true`
+
+### tickInterval
+Type: `number`  
+
+刻度间隔，用来坐标debug用
+
+default: `undefined`
+
 ### onMeasure(box)
 Type: `function`
 
@@ -179,3 +207,10 @@ id: `required`，矩形的唯一id，通过id来进行唯一性判断
 
 ### getMeasureBoxs()
 取得当前设置的矩形数组
+
+## BOX_TYPE
+Type: `enum` NORMAL/OK/NG,
+
+测量矩形的类型，用来控制样式
+
+default: `NORMAL`
