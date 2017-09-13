@@ -492,8 +492,6 @@ class PositionMap {
     } else {
       idx = idx + 1;
     }
-    process.stdout.write("value: " + value + " arrLen: " + ln + " ");
-    process.stdout.write("itemHeight: " + this._height + " idx: " + idx + "\n");
     return idx;
   }
   binarySearch(arr, value) {
