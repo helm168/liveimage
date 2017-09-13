@@ -470,35 +470,33 @@ class PositionMap {
     else {
       idx = idx + 1;
     }
-    process.stdout.write("value: " + value + " arrLen: " + ln + " ");
-    process.stdout.write("itemHeight: " + this._height + " idx: " + idx + "\n");
     return idx;
   }
-	binarySearch(arr, value) {
-		let ln = arr.length;
-		let startIdx = 0;
-		let endIdx = ln - 1;
+  binarySearch(arr, value) {
+    let ln = arr.length;
+    let startIdx = 0;
+    let endIdx = ln - 1;
 
-		if (value <= arr[startIdx]) {
-			return startIdx;
-		}
+    if (value <= arr[startIdx]) {
+      return startIdx;
+    }
 
-		if (value >= arr[endIdx]) {
-			return endIdx;
-		}
+    if (value >= arr[endIdx]) {
+      return endIdx;
+    }
 
-		while (startIdx + 1 < endIdx) {
-			let middleIdx = Math.floor((startIdx + endIdx) / 2);
-			if (value < arr[middleIdx]) {
-				endIdx = middleIdx;
-			} else if (value > arr[middleIdx]) {
-				startIdx = middleIdx;
-			} else {
-				return middleIdx;
-			}
-		}
-		return startIdx;
-	}
+    while (startIdx + 1 < endIdx) {
+      let middleIdx = Math.floor((startIdx + endIdx) / 2);
+      if (value < arr[middleIdx]) {
+        endIdx = middleIdx;
+      } else if (value > arr[middleIdx]) {
+        startIdx = middleIdx;
+      } else {
+        return middleIdx;
+      }
+    }
+    return startIdx;
+  }
 }
 
 let styles = {
