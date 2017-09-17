@@ -455,34 +455,48 @@ class PositionMap {
 			this._count = count;
 		}
 	}
-	findIndex(y) {
-		return this.binarySearch(this._map, y);
-	}
-	binarySearch(arr, value) {
-		let ln = arr.length;
-		let startIdx = 0;
-		let endIdx = ln - 1;
+  findIndex(y) {
+    // return this.binarySearch(this._map, y);
+    return this.fixSearch(this._map, y);
+  }
+  fixSearch(arr, value) {
+    let idx = 0;
+    let ln = arr.length;
+    if (value < 0) return 0;
+    idx = Math.floor(value / this._height);
+    if (ln > 1) {
+      idx =  Math.min(ln - 1, idx + 1);
+    }
+    else {
+      idx = idx + 1;
+    }
+    return idx;
+  }
+  binarySearch(arr, value) {
+    let ln = arr.length;
+    let startIdx = 0;
+    let endIdx = ln - 1;
 
-		if (value <= arr[startIdx]) {
-			return startIdx;
-		}
+    if (value <= arr[startIdx]) {
+      return startIdx;
+    }
 
-		if (value >= arr[endIdx]) {
-			return endIdx;
-		}
+    if (value >= arr[endIdx]) {
+      return endIdx;
+    }
 
-		while (startIdx + 1 < endIdx) {
-			let middleIdx = Math.floor((startIdx + endIdx) / 2);
-			if (value < arr[middleIdx]) {
-				endIdx = middleIdx;
-			} else if (value > arr[middleIdx]) {
-				startIdx = middleIdx;
-			} else {
-				return middleIdx;
-			}
-		}
-		return startIdx;
-	}
+    while (startIdx + 1 < endIdx) {
+      let middleIdx = Math.floor((startIdx + endIdx) / 2);
+      if (value < arr[middleIdx]) {
+        endIdx = middleIdx;
+      } else if (value > arr[middleIdx]) {
+        startIdx = middleIdx;
+      } else {
+        return middleIdx;
+      }
+    }
+    return startIdx;
+  }
 }
 
 let styles = {
