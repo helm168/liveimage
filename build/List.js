@@ -480,19 +480,15 @@ class PositionMap {
   }
   findIndex(y) {
     // return this.binarySearch(this._map, y);
-    return this.fixSearch(this._map, y);
+    return this.fixSearch(this._map, y, this._height);
   }
-  fixSearch(arr, value) {
+  fixSearch(arr, value, height) {
     let idx = 0;
     let ln = arr.length;
+    if (ln <= 0) return 0;
     if (value < 0) return 0;
-    idx = Math.floor(value / this._height);
-    if (ln > 1) {
-      idx = Math.min(ln - 1, idx + 1);
-    } else {
-      idx = idx + 1;
-    }
-    return idx;
+    idx = Math.floor(value / height);
+    return Math.min(ln - 1, idx);
   }
   binarySearch(arr, value) {
     let ln = arr.length;
