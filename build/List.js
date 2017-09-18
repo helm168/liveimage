@@ -31,6 +31,8 @@ const S_DIRECTION = {
 
 const noop = () => {};
 
+const CONSOME_DETECT_TIMEOUT = 3000;
+
 class List extends _react.Component {
 
   constructor(props) {
@@ -267,16 +269,36 @@ class List extends _react.Component {
         this._scroller._refreshPosition();
         this._didMount = true;
         this.scrollTo(this._initPosition.x, this._initPosition.y);
+
+        this.onConsumeProcess();
       }
     }));
   }
 
-  componentDidUpdate() {
-    this.onConsumeProcess();
-  }
-
   componentWillUnmount() {
     this._rafIds.forEach(rafId => cancelAnimationFrame(rafId));
+    clearTimeout(this._consumeDetectId);
+  }
+
+  doConsumeDetect() {
+    let lastRemainScroll = this._lastRemainScroll;
+    let remainScroll = this._getRemainScroll();
+    let diff = Math.abs(remainScroll - lastRemainScroll);
+    if (diff > this.props.blockscope[1]) {
+      this.props.onBlock();
+    } else if (diff < this.props.blockscope[0]) {
+      this.props.onDrain();
+    }
+    this._lastRemainScroll = remainScroll;
+    this._consumeDetectId = setTimeout(() => {
+      this.doConsumeDetect();
+    }, CONSOME_DETECT_TIMEOUT);
+  }
+
+  _getRemainScroll() {
+    let px = this.getPosition().x;
+    let mpx = this.getMinPosition().x;
+    return Math.abs(px - mpx);
   }
 
   /*
@@ -285,14 +307,9 @@ class List extends _react.Component {
    */
   onConsumeProcess() {
     if (this.props.blockscope) {
-      let px = this.getPosition().x;
-      let mpx = this.getMinPosition().x;
-      let remainScroll = Math.abs(px - mpx);
-      if (remainScroll > this.props.blockscope[1]) {
-        this.props.onBlock();
-      } else if (remainScroll < this.props.blockscope[0]) {
-        this.props.onDrain();
-      }
+      this._consumeDetectId = setTimeout(() => {
+        this.doConsumeDetect();
+      }, CONSOME_DETECT_TIMEOUT);
     }
   }
 
