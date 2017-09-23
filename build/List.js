@@ -48,6 +48,9 @@ class List extends _react.Component {
     this.state = {
       measureBoxs: []
     };
+    this.onDataReset = this.onDataReset.bind(this);
+    this.onDataOverflow = this.onDataOverflow.bind(this);
+    this._lastRemainScroll = 0;
   }
 
   getDataSize(data) {
@@ -137,7 +140,8 @@ class List extends _react.Component {
     });
   }
 
-  renderListItem(key, data, itemStyle) {
+  renderListItem(data, itemStyle) {
+    let key = data.id;
     return _react2.default.createElement(this.props.itemClazz, _extends({ key: key }, data, { style: itemStyle,
       rotate: this.props.rotate }));
   }
@@ -174,7 +178,7 @@ class List extends _react.Component {
         let dataIdx = topItemIdx + i;
         let itemData = data.getDataAt(dataIdx);
         if (itemData) {
-          items.unshift(this.renderListItem(dataIdx, itemData, itemStyle));
+          items.unshift(this.renderListItem(itemData, itemStyle));
         }
       }
     } else if (this._sDirection === S_DIRECTION.DOWN) {
@@ -188,16 +192,20 @@ class List extends _react.Component {
         let itemData = data.getDataAt(dataIdx);
 
         if (itemData) {
-          items.push(this.renderListItem(dataIdx, itemData, itemStyle));
+          items.push(this.renderListItem(itemData, itemStyle));
         }
       }
     } else {
       this._listItems = items = [];
+      if (this._overflowRender) {
+        this._paddingStyle[heightName] = this._initPadding[axis];
+        this._overflowRender = false;
+      }
       for (let i = 0; i < renderItemCount; i++) {
         let dataIdx = topItemIdx + i;
         // 考虑store数据被截断的case
-        let itemData = data.getDataAt(dataIdx) || {};
-        items.push(this.renderListItem(dataIdx, itemData, itemStyle));
+        let itemData = data.getDataAt(dataIdx) || { id: Math.random() };
+        items.push(this.renderListItem(itemData, itemStyle));
       }
     }
     this._sDirection = null;
@@ -237,7 +245,10 @@ class List extends _react.Component {
   }
 
   componentWillMount() {
-    this._dataLn = this.getDataSize(this.props.data);
+    let store = this._store = this.props.data;
+    this._dataLn = this.getDataSize(store);
+    store.on('reset', this.onDataReset);
+    store.on('dataoverflow', this.onDataOverflow);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -278,15 +289,20 @@ class List extends _react.Component {
   componentWillUnmount() {
     this._rafIds.forEach(rafId => cancelAnimationFrame(rafId));
     clearTimeout(this._consumeDetectId);
+    let store = this._store;
+    if (store) {
+      store.removeListener('reset', this.onDataReset);
+      store.removeListener('dataoverflow', this.onDataOverflow);
+    }
   }
 
   doConsumeDetect() {
     let lastRemainScroll = this._lastRemainScroll;
     let remainScroll = this._getRemainScroll();
     let diff = Math.abs(remainScroll - lastRemainScroll);
-    if (diff > this.props.blockscope[1]) {
+    if (remainScroll - lastRemainScroll > 0) {
       this.props.onBlock();
-    } else if (diff < this.props.blockscope[0]) {
+    } else {
       this.props.onDrain();
     }
     this._lastRemainScroll = remainScroll;
@@ -301,12 +317,31 @@ class List extends _react.Component {
     return Math.abs(px - mpx);
   }
 
+  onDataReset() {
+    let store = this.props.data;
+    store.setMin(0);
+    this._topItemDataIdx = 0;
+    this._overflowRender = true;
+    let axis = this.getAxis();
+    let position = this.getPosition()[axis];
+    this._scroller.scrollTo(this._initPadding[axis], 0);
+  }
+
+  onDataOverflow(removeCount) {
+    let store = this.props.data;
+    store.setMin(0);
+    this._topItemDataIdx = 0;
+    this._overflowRender = true;
+    let position = this.getPosition()[this.getAxis()];
+    this._scroller.scrollTo(position + removeCount * this._itemHeight, 0);
+  }
+
   /*
    * 通知外部组件当前数据的消费情况
    * TODO: 垂直方向的考虑
    */
   onConsumeProcess() {
-    if (this.props.blockscope) {
+    if (this.props.consumeNotification) {
       this._consumeDetectId = setTimeout(() => {
         this.doConsumeDetect();
       }, CONSOME_DETECT_TIMEOUT);
@@ -314,17 +349,10 @@ class List extends _react.Component {
   }
 
   onScroll(scroller, position) {
-    let axis = this.getAxis();
-    let dis = this.props.rtl ? -position[axis] : position[axis];
-    dis = dis - this._initPadding[axis];
-    let itemIdx = this._positionMap.findIndex(dis);
+    let topPosition = this._getTopPosition(position);
+    let itemIdx = this._positionMap.findIndex(topPosition);
     let maxIndex = this.props.data.size() - this._listItems.length;
     itemIdx = Math.min(itemIdx, maxIndex);
-    let start = this.props.data.start();
-    if (itemIdx < start) {
-      itemIdx = start;
-      this._clear();
-    }
     this.props.data.setMin(itemIdx);
     if (itemIdx !== this._topItemDataIdx) {
       if (this._topItemDataIdx > itemIdx) {
@@ -339,6 +367,12 @@ class List extends _react.Component {
     } else {
       this._currentScrollItemCount = 0;
     }
+  }
+
+  _getTopPosition(position) {
+    let axis = this.getAxis();
+    let dis = this.props.rtl ? -position[axis] : position[axis];
+    return dis - this._initPadding[axis];
   }
 
   _clear() {
@@ -386,9 +420,11 @@ class List extends _react.Component {
       height = Math.max(window.innerWidth, window.innerHeight);
     }
     this._visualItemCount = Math.max(this._visualItemCount, Math.ceil(height / itemHeight) + 2);
-    // FIXME ugly
-    if (this.props.data) {
-      this.props.data.__inScreenDataNum = this._visualItemCount;
+    let store = this.props.data;
+    if (store) {
+      // FIXME ugly
+      store.__inScreenDataNum = this._visualItemCount;
+      store.setRemainDataLnWhenReset(this._visualItemCount);
     }
   }
 
@@ -468,7 +504,8 @@ List.propTypes = {
   itemHwRatio: _react.PropTypes.number,
   itemClazz: _react.PropTypes.func.isRequired,
   direction: _react.PropTypes.string,
-  rtl: _react.PropTypes.bool
+  rtl: _react.PropTypes.bool,
+  consumeNotification: _react.PropTypes.bool
 };
 List.contextTypes = {
   dPix2cssRatio: _react.PropTypes.number,
@@ -478,7 +515,8 @@ List.contextTypes = {
 List.defaultProps = {
   direction: 'v',
   onBlock: noop,
-  onDrain: noop
+  onDrain: noop,
+  consumeNotification: false
 };
 class PositionMap {
   constructor(options) {

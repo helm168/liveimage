@@ -8,18 +8,24 @@ var _buf2pix = require('./buf2pix');
 
 var _buf2pix2 = _interopRequireDefault(_buf2pix);
 
+var _events = require('events');
+
+var _events2 = _interopRequireDefault(_events);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 let itemId = 0;
 /* list使用的数据源。主要有两类：一类是图像数据，一类是测量矩形
  * 图片数据特殊处理： 由于图片一直以流的方式显示，不仅ui需要动态删除，数据也需要删除，不然可能撑爆内存
  */
-class Store {
+class Store extends _events2.default {
   constructor(options = {}) {
+    super();
     this._maxLn = options.maxLn;
     this._fMaxLn = options.fMaxLn;
     this._minLn = 0;
     this._startIdx = 0;
+    this._remainDataLnWhenReset = 0;
     this.setData(options.data);
   }
   getDataAt(idx) {
@@ -47,7 +53,7 @@ class Store {
     imgs.forEach((img, idx) => {
       if (!lastData || lastData.src.full) {
         lastData = {
-          idx: itemId++,
+          id: itemId++,
           src: _buf2pix2.default[method](img, null, imgWidth, imgHeight),
           width: imgWidth,
           height: imgHeight,
@@ -77,24 +83,25 @@ class Store {
     }
   }
   setData(data = []) {
-    if (this._froze) return;
-    if (this._fMaxLn && data.length > this._fMaxLn) {
-      let delLn = data.length - this._maxLn;
-      this._data = data.slice(delLn);
-      this._startIdx += delLn;
-    } else if (data.length > this._maxLn) {
-      let delLn = data.length - this._maxLn;
-      this._startIdx += delLn;
-      if (this._startIdx > this._minLn) {
-        this._data = data.slice(delLn - (this._startIdx - this._minLn));
-        this._startIdx = this._minLn;
+    if (data.length > this._maxLn) {
+      let delLn = this._minLn;
+      let remainLn = data.length - delLn;
+      if (remainLn > this._maxLn) {
+        this._data = data.slice(data.length - this._remainDataLnWhenReset);
+        this.emit('reset');
       } else {
-        this._data = data.slice(delLn);
+        this._data = data.slice(this._minLn);
+        this.emit('dataoverflow', delLn, data.length);
       }
     } else {
-      this._startIdx = 0;
       this._data = data;
     }
+  }
+  setRemainDataLnWhenReset(count) {
+    this._remainDataLnWhenReset = count;
+  }
+  getRemainDataLnWhenReset() {
+    return this._remainDataLnWhenReset;
   }
   setMin(minLn) {
     this._minLn = minLn;

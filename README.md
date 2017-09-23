@@ -115,13 +115,6 @@ Type: `object`
 
 图片数据管理对象, 关于store的用法参考这里
 
-### blockscope
-Type: `array`
-
-加减速范围，待渲染图片的长度处于此范围之外时会触发自动加减速
-
-default: `[200, 300]`
-
 ### showControls
 Type: `boolean`  
 
