@@ -90,7 +90,6 @@ export default class LiveImage extends Component {
     autoVelocity: PropTypes.bool,
     minVelocity: PropTypes.number,
     maxVelocity: PropTypes.number,
-    blockscope: PropTypes.array,
     imgWidth: PropTypes.number,
     imgHeight: PropTypes.number,
     imgs: PropTypes.array,
@@ -118,7 +117,6 @@ export default class LiveImage extends Component {
     autoVelocity: true,
     minVelocity: .5,
     maxVelocity: 2,
-    blockscope: [200, 300],
     imgWidth: 2560,
     imgHeight: 320,
     // itemHeight: 176,
@@ -436,7 +434,7 @@ export default class LiveImage extends Component {
           rtl={rtl}
           onBlock={this.onBlock.bind(this)}
           onDrain={this.onDrain.bind(this)}
-          blockscope={blockscope}
+          consumeNotification={this.props.autoVelocity}
           padding2Smooth={this.props.padding2Smooth}
           ref={(scroller) => {this._scroller = scroller;}}
         />

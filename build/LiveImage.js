@@ -428,7 +428,7 @@ class LiveImage extends _react.Component {
         rtl: rtl,
         onBlock: this.onBlock.bind(this),
         onDrain: this.onDrain.bind(this),
-        blockscope: blockscope,
+        consumeNotification: this.props.autoVelocity,
         padding2Smooth: this.props.padding2Smooth,
         ref: scroller => {
           this._scroller = scroller;
@@ -520,7 +520,6 @@ LiveImage.propTypes = {
   autoVelocity: _propTypes2.default.bool,
   minVelocity: _propTypes2.default.number,
   maxVelocity: _propTypes2.default.number,
-  blockscope: _propTypes2.default.array,
   imgWidth: _propTypes2.default.number,
   imgHeight: _propTypes2.default.number,
   imgs: _propTypes2.default.array,
@@ -547,7 +546,6 @@ LiveImage.defaultProps = {
   autoVelocity: true,
   minVelocity: .5,
   maxVelocity: 2,
-  blockscope: [200, 300],
   imgWidth: 2560,
   imgHeight: 320,
   // itemHeight: 176,
