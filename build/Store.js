@@ -87,11 +87,11 @@ class Store extends _events2.default {
       let delLn = this._minLn;
       let remainLn = data.length - delLn;
       if (remainLn > this._maxLn) {
-        this._data = data.slice(data.length - this._remainDataLnWhenReset);
-        this.emit('reset');
+        this._data = this._data.splice(this._minLn, this._remainDataLnWhenReset);
+        this.emit('reset', delLn);
       } else {
         this._data = data.slice(this._minLn);
-        this.emit('dataoverflow', delLn, data.length);
+        this.emit('dataoverflow', delLn);
       }
     } else {
       this._data = data;
