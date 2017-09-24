@@ -314,23 +314,21 @@ export default class List extends Component {
     return Math.abs(px - mpx);
   }
 
-  onDataReset() {
-    let store = this.props.data;
-    store.setMin(0);
-    this._topItemDataIdx = 0;
-    this._overflowRender = true;
-    let axis = this.getAxis();
-    let position = this.getPosition()[axis];
-    this._scroller.scrollTo(this._initPadding[axis], 0);
-  }
-
-  onDataOverflow(removeCount) {
+  _rePositionAfterDataRemove(removeCount) {
     let store = this.props.data;
     store.setMin(0);
     this._topItemDataIdx = 0;
     this._overflowRender = true;
     let position = this.getPosition()[this.getAxis()];
     this._scroller.scrollTo(position + removeCount * this._itemHeight, 0);
+  }
+
+  onDataReset(removeCountBeforeScreen) {
+    this._rePositionAfterDataRemove(removeCountBeforeScreen);
+  }
+
+  onDataOverflow(removeCount) {
+    this._rePositionAfterDataRemove(removeCount);
   }
 
   /*
