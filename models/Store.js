@@ -9,6 +9,8 @@ export default class Store extends EventEmitter{
   constructor(options = {}) {
     super();
     this._maxLn = options.maxLn;
+    // magic number 5. 测试时一列imageData的宽度大概有5个
+    this._measureMaxLn = this._maxLn * 5;
     this._fMaxLn = options.fMaxLn;
     this._minLn = 0;
     this._startIdx = 0;
@@ -42,6 +44,7 @@ export default class Store extends EventEmitter{
         lastData = {
           id: itemId++,
           src: buf2pix[method](img, null, imgWidth, imgHeight),
+          lineIndex: img.lineIndex,
           width: imgWidth,
           height: imgHeight,
           webgl,
@@ -67,6 +70,10 @@ export default class Store extends EventEmitter{
     // store中的_measureBoxs 先要确保没有重复.
     if (!this._measureBoxs.find(thisBox => (thisBox.id === measureBox.id))) {
       this._measureBoxs.push(measureBox);
+    }
+    // measurebox数据也需要丢弃
+    if (this._measureBoxs.length > this._measureMaxLn) {
+      this._measureBoxs = this.this._measureBoxs.slice(this._measureBoxs.length - this._measureMaxLn)
     }
   }
   setData(data = []) {

@@ -74,22 +74,29 @@ class List extends _react.Component {
   }
 
   renderMeasureBoxs() {
-    if (!this.context.showMeasures) {
+    let {
+      showMeasures,
+      dPix2cssRatio
+    } = this.context;
+    if (!showMeasures) {
       return null;
     }
     let measureBoxs = this.state.measureBoxs;
     let mappedMeasureBoxs = [];
     let axis = this.getAxis();
     measureBoxs.forEach(box => {
-      if (box.positionMapped) {
-        mappedMeasureBoxs.push(box);
-      } else {
-        box.top = box.top / this.context.dPix2cssRatio;
-        box.right = box.lineIndex / this.context.dPix2cssRatio + this._initPadding[axis];
+      let lineIndex = this._getTopItemLineIndex();
+      if (isNaN(lineIndex)) return;
+      let boxLineIndex = box.lineIndex;
+      if (isNaN(boxLineIndex) || boxLineIndex < lineIndex) return;
+
+      if (!box.positionMapped) {
+        box.top = box.top / dPix2cssRatio;
         delete box.left;
         box.positionMapped = true;
-        mappedMeasureBoxs.push(box);
       }
+      box.right = (boxLineIndex - lineIndex) / dPix2cssRatio + this._infinitePadding;
+      mappedMeasureBoxs.push(box);
     });
     return _react2.default.createElement(
       'div',
@@ -99,29 +106,37 @@ class List extends _react.Component {
   }
 
   renderTicks() {
-    if (this.context.tickInterval) {
-      if (!this._ticks) this._ticks = [];
-      let lastTick = this._ticks[this._ticks.length - 1];
-      let nextTickValue;
-      if (lastTick) {
-        nextTickValue = lastTick.value + this.context.tickInterval;
-      } else {
-        nextTickValue = 0;
-      }
-      let axis = this.getAxis();
-      let nextTick = {
-        id: nextTickValue,
-        right: nextTickValue / this.context.dPix2cssRatio + this._initPadding[axis],
-        value: nextTickValue
-      };
-      let minPosition = Math.abs(this.getMinPosition()[axis]);
-      if (nextTick.right < minPosition) {
-        this._ticks.push(nextTick);
+    let {
+      tickInterval,
+      dPix2cssRatio
+    } = this.context;
+    if (tickInterval) {
+      // 根据top listitem的lineindex决定tick的值
+      let lineIndex = this._getTopItemLineIndex();
+      if (isNaN(lineIndex)) return;
+      let tickIntervalCss = tickInterval / dPix2cssRatio;
+      let startTickValue = Math.ceil(lineIndex / tickInterval) * tickInterval;
+      let startTickCssValue = (startTickValue - lineIndex) / dPix2cssRatio + this._infinitePadding;
+      let tickCount = Math.floor(this._visualItemCount * this._itemHeight / tickIntervalCss);
+      let ticks = [];
+      ticks.push({
+        id: startTickValue,
+        right: startTickCssValue,
+        value: startTickValue
+      });
+      for (let i = 1; i < tickCount; i++) {
+        let lastTick = ticks[i - 1];
+        let currentTickValue = lastTick.value + tickInterval;
+        ticks.push({
+          id: currentTickValue,
+          right: lastTick.right + tickIntervalCss,
+          value: currentTickValue
+        });
       }
       return _react2.default.createElement(
         'div',
         { style: styles.tickContainer, className: '_tickBox' },
-        this._ticks.map(tick => _react2.default.createElement(_Tick2.default, _extends({ key: tick.id }, tick)))
+        ticks.map(tick => _react2.default.createElement(_Tick2.default, _extends({ key: tick.id }, tick)))
       );
     } else {
       return null;
@@ -174,11 +189,13 @@ class List extends _react.Component {
         // 当items的数量超过最大数量时才删除
         if (items.length >= itemLength) {
           items.pop();
+          this._listItemData.pop();
         }
         let dataIdx = topItemIdx + i;
         let itemData = data.getDataAt(dataIdx);
         if (itemData) {
           items.unshift(this.renderListItem(itemData, itemStyle));
+          this._listItemData.unshift(itemData);
         }
       }
     } else if (this._sDirection === S_DIRECTION.DOWN) {
@@ -187,16 +204,19 @@ class List extends _react.Component {
         // 当items的数量超过最大数量时才删除
         if (items.length >= itemLength) {
           items.shift();
+          this._listItemData.shift();
         }
         let dataIdx = topItemIdx + i + itemLength - itemCount;
         let itemData = data.getDataAt(dataIdx);
 
         if (itemData) {
           items.push(this.renderListItem(itemData, itemStyle));
+          this._listItemData.push(itemData);
         }
       }
     } else {
       this._listItems = items = [];
+      this._listItemData = [];
       if (this._overflowRender) {
         this._paddingStyle[heightName] = this._initPadding[axis];
         this._overflowRender = false;
@@ -206,6 +226,7 @@ class List extends _react.Component {
         // 考虑store数据被截断的case
         let itemData = data.getDataAt(dataIdx) || { id: Math.random() };
         items.push(this.renderListItem(itemData, itemStyle));
+        this._listItemData.push(itemData);
       }
     }
     this._sDirection = null;
@@ -213,7 +234,7 @@ class List extends _react.Component {
     let contentStyle = Object.assign({}, style);
     contentStyle[heightName] = itemHeight * data.size() + this._initPadding[axis];
     let holderStyle = {};
-    holderStyle[heightName] = this._paddingStyle[heightName];
+    holderStyle[heightName] = this._infinitePadding = this._paddingStyle[heightName];
 
     return _react2.default.createElement(
       'div',
@@ -311,6 +332,13 @@ class List extends _react.Component {
     }, CONSOME_DETECT_TIMEOUT);
   }
 
+  // 取得list第一个item的lineIndex, 用来给其他元素定位做参考(tick/measurebox)
+  _getTopItemLineIndex() {
+    let topItemData = this._listItemData && this._listItemData[0];
+    if (!topItemData) return;
+    return topItemData.lineIndex;
+  }
+
   _getRemainScroll() {
     let px = this.getPosition().x;
     let mpx = this.getMinPosition().x;
@@ -361,7 +389,7 @@ class List extends _react.Component {
         this._currentScrollItemCount = itemIdx - this._topItemDataIdx;
       }
       this._topItemDataIdx = itemIdx;
-      this.forceUpdate();
+      // this.forceUpdate();
     } else {
       this._currentScrollItemCount = 0;
     }
