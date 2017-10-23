@@ -86,7 +86,7 @@ class Store extends _events2.default {
     }
     // measurebox数据也需要丢弃
     if (this._measureBoxs.length > this._measureMaxLn) {
-      this._measureBoxs = this.this._measureBoxs.slice(this._measureBoxs.length - this._measureMaxLn);
+      this._measureBoxs = this._measureBoxs.slice(this._measureBoxs.length - this._measureMaxLn);
     }
   }
   setData(data = []) {
