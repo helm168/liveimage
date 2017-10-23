@@ -73,7 +73,7 @@ export default class Store extends EventEmitter{
     }
     // measurebox数据也需要丢弃
     if (this._measureBoxs.length > this._measureMaxLn) {
-      this._measureBoxs = this.this._measureBoxs.slice(this._measureBoxs.length - this._measureMaxLn)
+      this._measureBoxs = this._measureBoxs.slice(this._measureBoxs.length - this._measureMaxLn)
     }
   }
   setData(data = []) {
