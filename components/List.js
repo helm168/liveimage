@@ -27,6 +27,7 @@ export default class List extends Component {
     dPix2cssRatio: PropTypes.number,
     tickInterval: PropTypes.number,
     showMeasures: PropTypes.bool,
+    onRenderMeasures: PropTypes.func,
   };
 
   static defaultProps = {
@@ -48,10 +49,13 @@ export default class List extends Component {
     this._rafIds = [];
     this.state = {
       measureBoxs: [],
+      selectedBox: null
     };
     this.onDataReset = this.onDataReset.bind(this);
     this.onDataOverflow = this.onDataOverflow.bind(this);
     this._lastRemainScroll = 0;
+
+    this.onMeasureBoxClick = this.onMeasureBoxClick.bind(this);
   }
 
   getDataSize(data) {
@@ -74,10 +78,17 @@ export default class List extends Component {
     };
   }
 
+  onMeasureBoxClick(boxId) {
+    this.setState({
+      selectedBox: this.state.selectedBox === boxId ? null: boxId
+    });
+  }
+
   renderMeasureBoxs() {
     let {
       showMeasures,
       dPix2cssRatio,
+      onRenderMeasures,
     } = this.context;
     if (!showMeasures) {
       return null;
@@ -101,7 +112,7 @@ export default class List extends Component {
     });
     return (
       <div style={styles.measureBoxContainer} className="_measureBoxs">
-        {mappedMeasureBoxs.map(box => <MeasureBox key={box.id} {...box} mode={MODE.TOGGLE_MEASURE}/>)}
+        {mappedMeasureBoxs.map(box => <MeasureBox key={box.id} {...box} showMeasure={box.id === this.state.selectedBox } mode={MODE.TOGGLE_MEASURE} onRenderMeasures={onRenderMeasures} onBoxClick={this.onMeasureBoxClick}/>)}
       </div>
     );
   }
@@ -284,6 +295,9 @@ export default class List extends Component {
     this._calcItemHeight();
     this._initPositionMap(this._itemHeight, this.props.data.size());
     this._calcVisualItemCount(this.props.height, this._itemHeight);
+    
+    if (!this._scroller) { console.error('List::componentDidMount _scroller undefined!') }
+
     this._scroller.on('scroll', this.onScroll.bind(this));
     let resize = this._scroller._resize;
     this._scroller._resize = () => {
@@ -348,7 +362,7 @@ export default class List extends Component {
     this._topItemDataIdx = 0;
     this._overflowRender = true;
     let position = this.getPosition()[this.getAxis()];
-    this._scroller.scrollTo(position + removeCount * this._itemHeight, 0);
+    this._scroller && this._scroller.scrollTo(position + removeCount * this._itemHeight, 0);
   }
 
   onDataReset(removeCountBeforeScreen) {
@@ -507,6 +521,7 @@ export default class List extends Component {
 
   scrollTo(x, y) {
     if (this._didMount) {
+      if (!this._scroller) { console.error('List::componentDidMount _scroller undefined!') }
       this._scroller.scrollTo(x, y);
     } else {
       this._initPosition = {x: x, y: y};

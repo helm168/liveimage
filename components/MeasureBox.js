@@ -22,7 +22,7 @@ export default class MeasureBox extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showMeasure: false,
+      showMeasure: props.showMeasure,
     };
   }
   static propTypes = {
@@ -32,6 +32,9 @@ export default class MeasureBox extends Component {
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
     lnUnit: PropTypes.string,
+    onRenderMeasure: PropTypes.func,
+    onBoxClick: PropTypes.func,
+    showMeasure: PropTypes.bool,
   };
   static defaultProps = {
     lnUnit: UNIT_TYPE.MM,
@@ -41,10 +44,23 @@ export default class MeasureBox extends Component {
     mm2dPixRatio: PropTypes.number,
     dPix2cssRatio: PropTypes.number,
   };
-  onRectClick() {
+
+  componentWillReceiveProps(nextProps) {
+    const { showMeasure } = nextProps;
     this.setState({
-      showMeasure: !this.state.showMeasure,
+      showMeasure,
     });
+  }
+
+  onRectClick() {
+    // this.setState({
+    //   showMeasure: !this.state.showMeasure,
+    // });
+    
+    const { onBoxClick, id } = this.props;
+    if (onBoxClick) {
+      onBoxClick(id);
+    }
   }
   getRenderProps() {
     let {
@@ -100,6 +116,14 @@ export default class MeasureBox extends Component {
     if (this.props.mode === MODE.TOGGLE_MEASURE && !this.state.showMeasure) {
       return null;
     }
+
+    const { onRenderMeasures } = this.props;
+    if (onRenderMeasures) {
+      const { top, left, id } = this.props;
+      const { cssWidth, mmWidth, mmHeight } = renderProps;
+      return onRenderMeasures(id, top, left, cssWidth, mmWidth, mmHeight);
+    }
+
     let {
       top,
       left,

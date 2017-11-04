@@ -46,11 +46,14 @@ class List extends _react.Component {
     this._itemHeight = 0;
     this._rafIds = [];
     this.state = {
-      measureBoxs: []
+      measureBoxs: [],
+      selectedBox: null
     };
     this.onDataReset = this.onDataReset.bind(this);
     this.onDataOverflow = this.onDataOverflow.bind(this);
     this._lastRemainScroll = 0;
+
+    this.onMeasureBoxClick = this.onMeasureBoxClick.bind(this);
   }
 
   getDataSize(data) {
@@ -73,10 +76,17 @@ class List extends _react.Component {
     };
   }
 
+  onMeasureBoxClick(boxId) {
+    this.setState({
+      selectedBox: this.state.selectedBox === boxId ? null : boxId
+    });
+  }
+
   renderMeasureBoxs() {
     let {
       showMeasures,
-      dPix2cssRatio
+      dPix2cssRatio,
+      onRenderMeasures
     } = this.context;
     if (!showMeasures) {
       return null;
@@ -101,7 +111,7 @@ class List extends _react.Component {
     return _react2.default.createElement(
       'div',
       { style: styles.measureBoxContainer, className: '_measureBoxs' },
-      mappedMeasureBoxs.map(box => _react2.default.createElement(_MeasureBox2.default, _extends({ key: box.id }, box, { mode: _MeasureBox.MODE.TOGGLE_MEASURE })))
+      mappedMeasureBoxs.map(box => _react2.default.createElement(_MeasureBox2.default, _extends({ key: box.id }, box, { showMeasure: box.id === this.state.selectedBox, mode: _MeasureBox.MODE.TOGGLE_MEASURE, onRenderMeasures: onRenderMeasures, onBoxClick: this.onMeasureBoxClick })))
     );
   }
 
@@ -287,6 +297,11 @@ class List extends _react.Component {
     this._calcItemHeight();
     this._initPositionMap(this._itemHeight, this.props.data.size());
     this._calcVisualItemCount(this.props.height, this._itemHeight);
+
+    if (!this._scroller) {
+      console.error('List::componentDidMount _scroller undefined!');
+    }
+
     this._scroller.on('scroll', this.onScroll.bind(this));
     let resize = this._scroller._resize;
     this._scroller._resize = () => {
@@ -351,7 +366,7 @@ class List extends _react.Component {
     this._topItemDataIdx = 0;
     this._overflowRender = true;
     let position = this.getPosition()[this.getAxis()];
-    this._scroller.scrollTo(position + removeCount * this._itemHeight, 0);
+    this._scroller && this._scroller.scrollTo(position + removeCount * this._itemHeight, 0);
   }
 
   onDataReset(removeCountBeforeScreen) {
@@ -510,6 +525,9 @@ class List extends _react.Component {
 
   scrollTo(x, y) {
     if (this._didMount) {
+      if (!this._scroller) {
+        console.error('List::componentDidMount _scroller undefined!');
+      }
       this._scroller.scrollTo(x, y);
     } else {
       this._initPosition = { x: x, y: y };
@@ -536,7 +554,8 @@ List.propTypes = {
 List.contextTypes = {
   dPix2cssRatio: _react.PropTypes.number,
   tickInterval: _react.PropTypes.number,
-  showMeasures: _react.PropTypes.bool
+  showMeasures: _react.PropTypes.bool,
+  onRenderMeasures: _react.PropTypes.func
 };
 List.defaultProps = {
   direction: 'v',

@@ -18,6 +18,8 @@ const styles = {
   canvas: {
     width: '100%',
     height: '100%'
+    // transform: 'scale(2)',
+    // transformOrigin: 'right center 0px',
   }
 };
 

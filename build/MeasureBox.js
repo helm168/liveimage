@@ -39,14 +39,27 @@ class MeasureBox extends _react.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showMeasure: false
+      showMeasure: props.showMeasure
     };
   }
 
-  onRectClick() {
+
+  componentWillReceiveProps(nextProps) {
+    const { showMeasure } = nextProps;
     this.setState({
-      showMeasure: !this.state.showMeasure
+      showMeasure
     });
+  }
+
+  onRectClick() {
+    // this.setState({
+    //   showMeasure: !this.state.showMeasure,
+    // });
+
+    const { onBoxClick, id } = this.props;
+    if (onBoxClick) {
+      onBoxClick(id);
+    }
   }
   getRenderProps() {
     let {
@@ -102,6 +115,14 @@ class MeasureBox extends _react.Component {
     if (this.props.mode === MODE.TOGGLE_MEASURE && !this.state.showMeasure) {
       return null;
     }
+
+    const { onRenderMeasures } = this.props;
+    if (onRenderMeasures) {
+      const { top, left, id } = this.props;
+      const { cssWidth, mmWidth, mmHeight } = renderProps;
+      return onRenderMeasures(id, top, left, cssWidth, mmWidth, mmHeight);
+    }
+
     let {
       top,
       left
@@ -187,7 +208,10 @@ MeasureBox.propTypes = {
   top: _propTypes2.default.number.isRequired,
   width: _propTypes2.default.number.isRequired,
   height: _propTypes2.default.number.isRequired,
-  lnUnit: _propTypes2.default.string
+  lnUnit: _propTypes2.default.string,
+  onRenderMeasure: _propTypes2.default.func,
+  onBoxClick: _propTypes2.default.func,
+  showMeasure: _propTypes2.default.bool
 };
 MeasureBox.defaultProps = {
   lnUnit: UNIT_TYPE.MM,
