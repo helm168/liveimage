@@ -96,7 +96,6 @@ class MeasureBox extends _react.Component {
   }
   getRectBorder() {
     let type = this.props.type;
-
     if (type === BOX_TYPE.OK) {
       return '2px dashed #000';
     } else if (type === BOX_TYPE.NG) {

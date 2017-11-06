@@ -52,7 +52,7 @@ class List extends _react.Component {
     this.onDataReset = this.onDataReset.bind(this);
     this.onDataOverflow = this.onDataOverflow.bind(this);
     this._lastRemainScroll = 0;
-
+    
     this.onMeasureBoxClick = this.onMeasureBoxClick.bind(this);
   }
 
