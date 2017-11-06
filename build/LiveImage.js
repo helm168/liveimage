@@ -311,7 +311,7 @@ class LiveImage extends _react.Component {
   }
 
   renderControls() {
-    // if (!this.props.showControls) return null;
+    if (!this.props.showControls) return null;
     let text = this.state.paused ? '继续' : '暂停';
     let editText = this.state.inEdit ? '编辑中' : '编辑';
     let style;

@@ -478,7 +478,8 @@ class List extends _react.Component {
       if (!find) {
         mergeMeasureBox.push(box);
       } else {
-        mergeMeasureBox.push(find);
+        // 这里还有可能是box数据更新.
+        mergeMeasureBox.push(box);
       }
     });
     this.state.measureBoxs = mergeMeasureBox;

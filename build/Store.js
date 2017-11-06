@@ -89,6 +89,16 @@ class Store extends _events2.default {
       this._measureBoxs = this._measureBoxs.slice(this._measureBoxs.length - this._measureMaxLn);
     }
   }
+  updateMeasuerBox(measureBox) {
+    const idx = this._measureBoxs.findIndex(thisBox => thisBox.id === measureBox.id);
+
+    if (idx !== -1) {
+      this._measureBoxs[idx] = Object.assign({}, this._measureBoxs[idx], measureBox);
+      return true;
+    }
+
+    return false;
+  }
   setData(data = []) {
     if (data.length > this._maxLn) {
       let delLn = this._minLn;
