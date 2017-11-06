@@ -22,7 +22,7 @@ export default class MeasureBox extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showMeasure: false,
+      showMeasure: props.showMeasure,
     };
   }
   static propTypes = {
@@ -32,6 +32,12 @@ export default class MeasureBox extends Component {
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
     lnUnit: PropTypes.string,
+    onRenderMeasure: PropTypes.func,
+    onBoxClick: PropTypes.func,
+    showMeasure: PropTypes.bool,
+    type: PropTypes.string, // 'NG' or 'OK'  (BOX_TYPE)
+    typeDetail: PropTypes.string, // reason: 'OK' or 'NG cause of crack' ...
+    userCheck: PropTypes.string, 
   };
   static defaultProps = {
     lnUnit: UNIT_TYPE.MM,
@@ -41,10 +47,23 @@ export default class MeasureBox extends Component {
     mm2dPixRatio: PropTypes.number,
     dPix2cssRatio: PropTypes.number,
   };
-  onRectClick() {
+
+  componentWillReceiveProps(nextProps) {
+    const { showMeasure } = nextProps;
     this.setState({
-      showMeasure: !this.state.showMeasure,
+      showMeasure,
     });
+  }
+
+  onRectClick() {
+    // this.setState({
+    //   showMeasure: !this.state.showMeasure,
+    // });
+    
+    const { onBoxClick, id } = this.props;
+    if (onBoxClick) {
+      onBoxClick(id);
+    }
   }
   getRenderProps() {
     let {
@@ -94,12 +113,39 @@ export default class MeasureBox extends Component {
       height: renderProps.cssHeight,
       border: this.getRectBorder(),
     }
-    return <div style={style} onClick={this.onRectClick.bind(this)}></div>
+
+    const { userCheck } = this.props;    
+    if (userCheck) {
+      let style2 = {
+        width: '16px', 
+        height: '16px',
+        position: 'absolute',
+        top: '-5px',
+        right: '-5px',
+      };
+      if (userCheck.indexOf('OK') !== -1) {
+        style2.backgroundColor = '#ff0000';
+      } else {
+        style2.backgroundColor = '#000000';
+      }
+      return <div style={style} onClick={this.onRectClick.bind(this)}><div style={style2}></div></div>
+    } else {
+      return <div style={style} onClick={this.onRectClick.bind(this)}></div>
+    }
   }
+
   renderMeasure(renderProps) {
     if (this.props.mode === MODE.TOGGLE_MEASURE && !this.state.showMeasure) {
       return null;
     }
+
+    const { onRenderMeasures } = this.props;
+    if (onRenderMeasures) {
+      const { top, left, id, type, typeDetail, userCheck = null } = this.props;
+      const { cssWidth, mmWidth, mmHeight } = renderProps;
+      return onRenderMeasures(id, type, typeDetail, userCheck, top, left, cssWidth, mmWidth, mmHeight);
+    }
+
     let {
       top,
       left,

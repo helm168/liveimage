@@ -132,7 +132,8 @@ class LiveImage extends _react.Component {
       dPix2cssRatio,
       webgl: this.props.webgl,
       tickInterval: this.props.tickInterval,
-      showMeasures: this.props.showMeasures
+      showMeasures: this.props.showMeasures,
+      onRenderMeasures: this.props.onRenderMeasures
     };
   }
 
@@ -185,7 +186,9 @@ class LiveImage extends _react.Component {
   }
 
   _moveTo(position) {
-    this._scroller.scrollTo(position.x, position.y);
+    if (this._scroller) {
+      this._scroller.scrollTo(position.x, position.y);
+    }
   }
 
   _addKeydownListener() {
@@ -537,6 +540,7 @@ LiveImage.propTypes = {
   // 刻度间隔，用来debug用
   tickInterval: _propTypes2.default.number,
   showMeasures: _propTypes2.default.bool,
+  onRenderMeasures: _propTypes2.default.func,
   onanimation: _propTypes2.default.func,
   bufLength: _propTypes2.default.number
 };
@@ -558,6 +562,7 @@ LiveImage.defaultProps = {
   mm2dPixRatio: 1,
   padding2Smooth: true,
   showMeasures: false,
+  onRenderMeasures: null,
   onanimation: (liveimage, ln) => {},
   bufLength: 5
 };
@@ -566,5 +571,6 @@ LiveImage.childContextTypes = {
   dPix2cssRatio: _propTypes2.default.number,
   webgl: _propTypes2.default.bool,
   tickInterval: _propTypes2.default.number,
-  showMeasures: _propTypes2.default.bool
+  showMeasures: _propTypes2.default.bool,
+  onRenderMeasures: _propTypes2.default.func
 };

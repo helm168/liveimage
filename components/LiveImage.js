@@ -107,6 +107,7 @@ export default class LiveImage extends Component {
     // 刻度间隔，用来debug用
     tickInterval: PropTypes.number,
     showMeasures: PropTypes.bool,
+    onRenderMeasures: PropTypes.func,
     onanimation: PropTypes.func,
     bufLength: PropTypes.number
   }
@@ -129,6 +130,7 @@ export default class LiveImage extends Component {
     mm2dPixRatio: 1,
     padding2Smooth: true,
     showMeasures: false,
+    onRenderMeasures: null, 
     onanimation: (liveimage, ln)=> {},
     bufLength: 5
   }
@@ -139,6 +141,7 @@ export default class LiveImage extends Component {
     webgl: PropTypes.bool,
     tickInterval: PropTypes.number,
     showMeasures: PropTypes.bool,
+    onRenderMeasures: PropTypes.func,
   }
 
   getChildContext() {
@@ -153,6 +156,7 @@ export default class LiveImage extends Component {
       webgl: this.props.webgl,
       tickInterval: this.props.tickInterval,
       showMeasures: this.props.showMeasures,
+      onRenderMeasures: this.props.onRenderMeasures,
     };
   }
 
@@ -205,7 +209,9 @@ export default class LiveImage extends Component {
   }
 
   _moveTo(position) {
-    this._scroller.scrollTo(position.x, position.y);
+    if (this._scroller) {
+      this._scroller.scrollTo(position.x, position.y);
+    }
   }
 
   _addKeydownListener() {

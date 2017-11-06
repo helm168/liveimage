@@ -39,14 +39,27 @@ class MeasureBox extends _react.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showMeasure: false
+      showMeasure: props.showMeasure
     };
   }
 
-  onRectClick() {
+
+  componentWillReceiveProps(nextProps) {
+    const { showMeasure } = nextProps;
     this.setState({
-      showMeasure: !this.state.showMeasure
+      showMeasure
     });
+  }
+
+  onRectClick() {
+    // this.setState({
+    //   showMeasure: !this.state.showMeasure,
+    // });
+
+    const { onBoxClick, id } = this.props;
+    if (onBoxClick) {
+      onBoxClick(id);
+    }
   }
   getRenderProps() {
     let {
@@ -96,12 +109,43 @@ class MeasureBox extends _react.Component {
       height: renderProps.cssHeight,
       border: this.getRectBorder()
     };
-    return _react2.default.createElement('div', { style: style, onClick: this.onRectClick.bind(this) });
+
+    const { userCheck } = this.props;
+    if (userCheck) {
+      let style2 = {
+        width: '16px',
+        height: '16px',
+        position: 'absolute',
+        top: '-5px',
+        right: '-5px'
+      };
+      if (userCheck.indexOf('OK') !== -1) {
+        style2.backgroundColor = '#ff0000';
+      } else {
+        style2.backgroundColor = '#000000';
+      }
+      return _react2.default.createElement(
+        'div',
+        { style: style, onClick: this.onRectClick.bind(this) },
+        _react2.default.createElement('div', { style: style2 })
+      );
+    } else {
+      return _react2.default.createElement('div', { style: style, onClick: this.onRectClick.bind(this) });
+    }
   }
+
   renderMeasure(renderProps) {
     if (this.props.mode === MODE.TOGGLE_MEASURE && !this.state.showMeasure) {
       return null;
     }
+
+    const { onRenderMeasures } = this.props;
+    if (onRenderMeasures) {
+      const { top, left, id, type, typeDetail, userCheck = null } = this.props;
+      const { cssWidth, mmWidth, mmHeight } = renderProps;
+      return onRenderMeasures(id, type, typeDetail, userCheck, top, left, cssWidth, mmWidth, mmHeight);
+    }
+
     let {
       top,
       left
@@ -187,7 +231,13 @@ MeasureBox.propTypes = {
   top: _propTypes2.default.number.isRequired,
   width: _propTypes2.default.number.isRequired,
   height: _propTypes2.default.number.isRequired,
-  lnUnit: _propTypes2.default.string
+  lnUnit: _propTypes2.default.string,
+  onRenderMeasure: _propTypes2.default.func,
+  onBoxClick: _propTypes2.default.func,
+  showMeasure: _propTypes2.default.bool,
+  type: _propTypes2.default.string, // 'NG' or 'OK'  (BOX_TYPE)
+  typeDetail: _propTypes2.default.string, // reason: 'OK' or 'NG cause of crack' ...
+  userCheck: _propTypes2.default.string
 };
 MeasureBox.defaultProps = {
   lnUnit: UNIT_TYPE.MM,
