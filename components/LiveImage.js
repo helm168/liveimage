@@ -508,8 +508,8 @@ export default class LiveImage extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.imgs) {
-      this.addData(nextProps.imgs);
+    if (nextProps.store) { 
+      this._store = nextProps.store;
     }
   }
 
