@@ -502,6 +502,8 @@ class LiveImage extends _react.Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.store) {
       this._store = nextProps.store;
+    } else if (nextProps.imgs) {
+      this.addData(nextProps.imgs);
     }
   }
 
