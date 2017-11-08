@@ -39,7 +39,6 @@ export default class List extends Component {
 
   constructor(props) {
     super(props);
-    this._topItemDataIdx = 0;
     this._currentScrollItemCount = 0;
     this._listItems = [];
     this._visualItemCount = 0;
@@ -49,7 +48,8 @@ export default class List extends Component {
     this._rafIds = [];
     this.state = {
       measureBoxs: [],
-      selectedBox: null
+      selectedBox: null,
+      topItemDataIdx: 0,
     };
     this.onDataReset = this.onDataReset.bind(this);
     this.onDataOverflow = this.onDataOverflow.bind(this);
@@ -188,7 +188,7 @@ export default class List extends Component {
     let itemHeight = this._itemHeight;
     let items = this._listItems;
     let itemCount = this._currentScrollItemCount;
-    let topItemIdx = this._topItemDataIdx;
+    let topItemIdx = this.state.topItemDataIdx;
     let itemLength = this._listItems.length;
     let heightName = direction === 'v' ? 'height' : 'width';
     let axis = this.getAxis();
@@ -359,7 +359,7 @@ export default class List extends Component {
   _rePositionAfterDataRemove(removeCount) {
     let store = this.props.data;
     store.setMin(0);
-    this._topItemDataIdx = 0;
+    this.setState({ topItemDataIdx: 0 });
     this._overflowRender = true;
     let position = this.getPosition()[this.getAxis()];
     this._scroller && this._scroller.scrollTo(position + removeCount * this._itemHeight, 0);
@@ -391,15 +391,15 @@ export default class List extends Component {
     let maxIndex = this.props.data.size() - this._listItems.length;
     itemIdx = Math.min(itemIdx, maxIndex);
     this.props.data.setMin(itemIdx);
-    if (itemIdx !== this._topItemDataIdx) {
-      if (this._topItemDataIdx > itemIdx) {
+    if (itemIdx !== this.state.topItemDataIdx) {
+      if (this.state.topItemDataIdx > itemIdx) {
         this._sDirection = S_DIRECTION.UP;
-        this._currentScrollItemCount = this._topItemDataIdx - itemIdx;
+        this._currentScrollItemCount = this.state.topItemDataIdx - itemIdx;
       } else {
         this._sDirection = S_DIRECTION.DOWN;
-        this._currentScrollItemCount = itemIdx - this._topItemDataIdx;
+        this._currentScrollItemCount = itemIdx - this.state.topItemDataIdx;
       }
-      this._topItemDataIdx = itemIdx;
+      this.setState({ topItemDataIdx: itemIdx });
       // this.forceUpdate();
     } else {
       this._currentScrollItemCount = 0;
