@@ -47,16 +47,31 @@ export default {
       mapFn = linearMap([0, buf.imageWidth], [0, rgbaWidth]);
       minWidth = buf.imageWidth;
     }
-    for (let i = 0; i < minHeight; i++) {
-      rgbaBuf.fillHeight++;
-      for (let j = 0; j < minWidth; j++) {
-        let distJ = mapFn(j) + i * buf.imageWidth;
-        imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
-        imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
-        imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
-        imageBuffer[rgbaBuf.idx++] = 255;
+
+    if (rgbaWidth === buf.imageWidth) {
+      for (let i = 0, distJ = 0; i < minHeight; i++) {
+        for (let j = 0; j < minWidth; j++, distJ++) {
+          imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
+          imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
+          imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
+          imageBuffer[rgbaBuf.idx++] = 255;
+        }
       }
+      rgbaBuf.fillHeight += minHeight;
+      
+    } else {
+      for (let i = 0; i < minHeight; i++) {
+        for (let j = 0; j < minWidth; j++) {
+          let distJ = mapFn(j) + i * buf.imageWidth;
+          imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
+          imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
+          imageBuffer[rgbaBuf.idx++] = buf.imageBuffer[distJ];
+          imageBuffer[rgbaBuf.idx++] = 255;
+        }
+      }
+      rgbaBuf.fillHeight += minHeight;
     }
+
     rgbaBuf.full = rgbaBuf.fillHeight === rgbaBuf.height;
     return rgbaBuf;
   },
