@@ -498,6 +498,17 @@ export default class List extends Component {
     }
   }
 
+  getMaxPosition() {
+    if (this._scroller) {
+      return this._scroller.getMaxPosition();
+    } else {
+      return {
+        x: 0,
+        y: 0,
+      }
+    }
+  }
+
   getMinPosition() {
     if (this._scroller) {
       return this._scroller.getMinPosition();

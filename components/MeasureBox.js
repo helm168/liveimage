@@ -124,9 +124,13 @@ export default class MeasureBox extends Component {
         right: '-5px',
       };
       if (userCheck.indexOf('OK') !== -1) {
-        style2.backgroundColor = '#ff0000';
-      } else {
         style2.backgroundColor = '#000000';
+        style2.border = '1px solid #ff0000';
+        style2.borderRadius = '10px';
+      } else {
+        style2.backgroundColor = '#ff0000';
+        style2.border = '1px solid #000000';
+        style2.borderRadius = '10px';
       }
       return <div style={style} onClick={this.onRectClick.bind(this)}><div style={style2}></div></div>
     } else {
