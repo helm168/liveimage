@@ -210,9 +210,30 @@ class LiveImage extends _react.Component {
     }
   }
 
+  scrollToBottom() {
+    if (this._scroller) {
+      const { x, y } = this._scroller.getMinPosition();
+      this._scroller.scrollTo(x, y);
+    }
+  }
+
   getPosition() {
     if (this._scroller) {
       return this._scroller.getPosition();
+    }
+    return { x: 0, y: 0 };
+  }
+
+  getMaxPosition() {
+    if (this._scroller) {
+      return this._scroller.getMaxPosition();
+    }
+    return { x: 0, y: 0 };
+  }
+
+  getMinPosition() {
+    if (this._scroller) {
+      return this._scroller.getMinPosition();
     }
     return { x: 0, y: 0 };
   }
